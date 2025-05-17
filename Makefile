@@ -35,3 +35,8 @@ serve:
 test:
 	@echo "Running tests..."
 	venv/bin/pytest
+
+test-endpoint:
+	@echo "Running endpoint tests..."
+	aws cloudformation describe-stacks --stack-name multi-stack-${env} --region ${AWS_REGION} \
+		--query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text | xargs -I {} curl -X GET {}

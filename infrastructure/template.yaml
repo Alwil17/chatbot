@@ -10,6 +10,12 @@ Parameters:
     Type: String
     AllowedValues:
       - hervlokossou
+      - dev
+      - preprod
+      - prod
+      - hervlokossou_dev
+      - hervlokossou_preprod
+      - hervlokossou_prod
 
 ###############################################################################
 Resources:

@@ -12,8 +12,8 @@ async def app_lifespan(application: FastAPI):
 
 
 app = FastAPI(
-    title="Pethaul API",
-    description="Pethaul API description",
+    title="ChatBot API",
+    description="Chatbot API description",
     version="1.0.0",
     lifespan=app_lifespan,
 )
