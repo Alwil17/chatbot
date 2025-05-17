@@ -65,7 +65,7 @@ pipeline {
                 script {
                     // Add your endpoint testing commands here
                     echo "Testing the endpoint..."
-                    sh "make test-endpoint env=${BRANCH_NAME}"
+                    sh "make test-endpoint"
                 }
             }
         }
