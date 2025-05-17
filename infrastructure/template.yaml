@@ -9,13 +9,10 @@ Parameters:
     Description: Environment name for the application dev/staging/production
     Type: String
     AllowedValues:
-      - hervlokossou
+      - alwil17
       - dev
       - preprod
       - prod
-      - hervlokossou_dev
-      - hervlokossou_preprod
-      - hervlokossou_prod
 
 ###############################################################################
 Resources:
