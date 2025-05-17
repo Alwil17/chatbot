@@ -19,11 +19,11 @@ pipeline {
             }
         }
 
-        stage('Environment variable injection'){
+        stage('Environnement variable injection'){
             steps {
                 script{
-                    withCredentials([file(credentialsId: 'hervlokossou-chatbot-env-file', variable: 'ENV_FILE')]) {
-                        sh "cat $ENV_FILE >> .env"
+                    withCredentials([file(credentialsId: 'alwil17-chatbot-env-file', variable: 'ENV_FILE')]) {
+                        sh "cat ${ENV_FILE} > .env"
                     }
                 }
             }
