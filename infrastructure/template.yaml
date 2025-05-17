@@ -13,9 +13,9 @@ Parameters:
       - dev
       - preprod
       - prod
-      - hervlokossou-dev
-      - hervlokossou-preprod
-      - hervlokossou-prod
+      - hervlokossou_dev
+      - hervlokossou_preprod
+      - hervlokossou_prod
 
 ###############################################################################
 Resources:
