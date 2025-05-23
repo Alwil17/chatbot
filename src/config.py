@@ -4,11 +4,14 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    ENV_NAME: str = "local"
+    ENV_NAME: str = "alwil17"
     AWS_REGION_NAME: str = ""
     DYNAMO_TABLE: str = ""
     AWS_PROFILE: str = ""
     MISTRAL_API_KEY: str = ""
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_WEBHOOK_URL: str = ""
+    TELEGRAM_WEBHOOK_PATH: str = "/telegram/webhook"
 
     model_config = SettingsConfigDict(env_file=".env")
 
