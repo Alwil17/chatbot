@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     AWS_REGION_NAME: str = ""
     DYNAMO_TABLE: str = ""
     AWS_PROFILE: str = ""
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
     MISTRAL_API_KEY: str = ""
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_WEBHOOK_URL: str = ""
