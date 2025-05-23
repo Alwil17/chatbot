@@ -4,3 +4,4 @@ pydantic_settings
 boto3
 mangum
 httpx
+mistralai
