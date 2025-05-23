@@ -19,6 +19,16 @@ pipeline {
             }
         }
 
+        stage('Environment variable injection'){
+            steps {
+                script{
+                    withCredentials([file(credentialsId: 'hervlokossou-chatbot-env-file', variable: 'ENV_FILE')]) {
+                        sh "cat $ENV_FILE >> .env"
+                    }
+                }
+            }
+        }
+
 
         stage('Tests Unitaires') {
             steps {
@@ -46,6 +56,16 @@ pipeline {
                     // Add your deployment commands here
                     echo "Deploying the project..."
                     sh "make deploy env=${BRANCH_NAME}"
+                }
+            }
+        }
+
+        stage('Test endpoint'){
+            steps {
+                script {
+                    // Add your endpoint testing commands here
+                    echo "Testing the endpoint..."
+                    sh "make test-endpoint env=${BRANCH_NAME}"
                 }
             }
         }

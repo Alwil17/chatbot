@@ -7,6 +7,7 @@ from typing import List
 import boto3
 
 from src.config import env_vars
+## Simple edit
 
 
 class Utils:
@@ -53,4 +54,12 @@ class Utils:
     def get_session():
         return boto3.Session(
             region_name=env_vars.AWS_REGION_NAME, profile_name=env_vars.AWS_PROFILE
+        )
+
+    @staticmethod
+    def insert_data(item):
+        dynamo_client = boto3.client("dynamodb", region_name=env_vars.AWS_REGION_NAME)
+        dynamo_client.put_item(
+            TableName=env_vars.DYNAMO_TABLE,
+            Item=item,
         )
