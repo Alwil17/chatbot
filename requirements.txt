@@ -5,3 +5,5 @@ boto3
 mangum
 httpx
 mistralai
+python-telegram-bot
+python-dotenv
