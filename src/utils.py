@@ -129,33 +129,3 @@ class Utils:
         
         return list(conversations.values())
 
-    @staticmethod
-    def clear_table():
-        """Supprime toutes les données de la table"""
-        try:
-            Utils.log_info("Début de la suppression des données de la table")
-            dynamo_resource = boto3.resource(
-                "dynamodb",
-                region_name=env_vars.AWS_REGION_NAME,
-                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY
-            )
-            table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
-            
-            # Scan pour obtenir tous les items (nécessaire pour la suppression)
-            scan = table.scan()
-            with table.batch_writer() as batch:
-                count = 0
-                for item in scan['Items']:
-                    batch.delete_item(
-                        Key={
-                            'id': item['id']
-                        }
-                    )
-                    count += 1
-            
-            Utils.log_info(f"Suppression terminée. {count} items supprimés.")
-            return {"message": f"{count} items supprimés avec succès"}
-        except Exception as e:
-            Utils.log_error(f"Erreur lors de la suppression des données: {str(e)}")
-            raise e
