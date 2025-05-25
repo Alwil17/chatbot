@@ -107,4 +107,9 @@ async def get_user_chats(user_id: str):
     messages = Utils.get_user_conversations(user_id)
     return {"conversations": messages}
 
+@app.delete("/clear-data")
+async def clear_data():
+    """Supprime toutes les données de la table"""
+    return Utils.clear_table()
+
 handler = Mangum(app)
