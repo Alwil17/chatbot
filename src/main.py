@@ -49,42 +49,51 @@ async def telegram_webhook(request: Request):
 
 @app.get("/chat")
 async def chat(question: str, conversation_id: str = None):
+    Utils.log_info(f"Nouvelle question reçue: {question}")
+    
     if not conversation_id:
         conversation_id = str(uuid4())
+        Utils.log_info(f"Nouvelle conversation créée avec ID: {conversation_id}")
 
-    chat_response = client.chat.complete(
-        model=model,
-        messages=[
-            {
-                "role": "user",
-                "content": question,
+    try:
+        chat_response = client.chat.complete(
+            model=model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": question,
+                },
+            ]
+        )
+        Utils.log_info("Réponse reçue de Mistral AI")
+        
+        timestamp = datetime.utcnow().isoformat()
+        response = {
+            "id": {
+                "S": f"{chat_response.id}",
             },
-        ]
-    )
-    
-    timestamp = datetime.utcnow().isoformat()
-    response = {
-        "id": {
-            "S": f"{chat_response.id}",
-        },
-        "conversation_id": {
-            "S": conversation_id
-        },
-        "timestamp": {
-            "S": timestamp
-        },
-        "question": {
-            "S": f"{question}",
-        },
-        "answer": {
-            "S": f"{chat_response.choices[0].message.content}",
-        },
-        "source": {
-            "S": "api"
+            "conversation_id": {
+                "S": conversation_id
+            },
+            "timestamp": {
+                "S": timestamp
+            },
+            "question": {
+                "S": f"{question}",
+            },
+            "answer": {
+                "S": f"{chat_response.choices[0].message.content}",
+            },
+            "source": {
+                "S": "api"
+            }
         }
-    }
-    Utils.insert_data(response)
-    return response
+        Utils.insert_data(response)
+        Utils.log_info("Traitement de la question terminé avec succès")
+        return response
+    except Exception as e:
+        Utils.log_error(f"Erreur lors du traitement de la question: {str(e)}")
+        raise e
 
 @app.get("/conversations/{conversation_id}")
 async def get_conversation(conversation_id: str):
@@ -92,8 +101,10 @@ async def get_conversation(conversation_id: str):
     messages = Utils.get_conversation_messages(conversation_id)
     return {"messages": messages}
 
-async def chats():
-    # Get al chats here
-    return {}
+@app.get("/chats/{user_id}")
+async def get_user_chats(user_id: str):
+    """Récupère toutes les conversations d'un utilisateur"""
+    messages = Utils.get_user_conversations(user_id)
+    return {"conversations": messages}
 
 handler = Mangum(app)
