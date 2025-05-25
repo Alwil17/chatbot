@@ -23,24 +23,23 @@ class TelegramBot:
 
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Gère les messages texte reçus"""
-        chat_id = update.effective_chat.id
+        chat_id = str(update.effective_chat.id)  # Convertir en string pour l'utiliser comme conversation_id
         user_id = update.effective_user.id
         message_text = update.message.text
-        conversation_id = context.chat_data.get('conversation_id', str(uuid4()))
         
-        if 'conversation_id' not in context.chat_data:
-            context.chat_data['conversation_id'] = conversation_id
-
         try:
             # Appel à l'API Mistral via les fonctions existantes
             from .main import chat
-            response = await chat(message_text)
+            Utils.log_info(f"Message reçu de Telegram - Chat ID: {chat_id}, Message: {message_text}")
+            
+            # Utiliser le chat_id de Telegram comme conversation_id
+            response = await chat(message_text, conversation_id=chat_id)
             
             # Envoyer la réponse à l'utilisateur
             await update.message.reply_text(response["answer"]["S"])
             
         except Exception as e:
-            Utils.log_error(f"Error processing message: {str(e)}")
+            Utils.log_error(f"Erreur lors du traitement du message Telegram: {str(e)}")
             await update.message.reply_text(
                 "Désolé, une erreur s'est produite lors du traitement de votre message."
             )
