@@ -13,6 +13,18 @@ Parameters:
       - dev
       - preprod
       - prod
+  TelegramBotToken:
+    Type: String
+    Description: Token for Telegram Bot (from BotFather)
+    NoEcho: true
+  MistralApiKey:
+    Type: String
+    Description: API Key for Mistral AI
+    NoEcho: true
+  TelegramWebhookUrl:
+    Type: String
+    Description: URL for Telegram Webhook (will be set automatically)
+    Default: ""
 
 ###############################################################################
 Resources:
@@ -38,6 +50,18 @@ Resources:
       CodeUri: ../
       Handler: src/main.handler
       Runtime: python3.12
+      Environment:
+        Variables:
+          ENV_NAME: !Ref EnvironmentName
+          AWS_REGION_NAME: !Ref AWS::Region
+          DYNAMO_TABLE: !Ref DynamoDBTable
+          TELEGRAM_BOT_TOKEN: !Ref TelegramBotToken
+          MISTRAL_API_KEY: !Ref MistralApiKey
+          TELEGRAM_WEBHOOK_URL: !Ref TelegramWebhookUrl
+          TELEGRAM_WEBHOOK_PATH: "/telegram/webhook"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTable
       Events:
         Api:
           Type: HttpApi
