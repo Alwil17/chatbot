@@ -78,11 +78,7 @@ pipeline {
             }
             post {
                 always {
-                    recordIssues(
-                        tools: [
-                            bandit(pattern: 'bandit-report.json')
-                        ]
-                    )
+                    archiveArtifacts artifacts: 'bandit-report.json', fingerprint: true
                 }
             }
         }
