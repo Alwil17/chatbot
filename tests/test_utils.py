@@ -16,7 +16,7 @@ def test_insert_and_get_conversation_messages(mock_dynamo):
     }
 
     # Test insertion
-    assert Utils.insert_data(message) == True
+    assert Utils.insert_data(message)
 
     # Test récupération
     messages = Utils.get_conversation_messages(conversation_id)
@@ -34,7 +34,7 @@ def test_delete_conversation_messages(mock_dynamo, sample_conversation):
     assert len(messages) == 2
 
     # Supprimer les messages
-    assert Utils.delete_conversation_messages(conversation_id) == True
+    assert Utils.delete_conversation_messages(conversation_id)
 
     # Vérifier que les messages ont été supprimés
     messages = Utils.get_conversation_messages(conversation_id)
@@ -44,7 +44,7 @@ def test_delete_conversation_messages(mock_dynamo, sample_conversation):
 def test_delete_nonexistent_conversation(mock_dynamo):
     """Test la suppression d'une conversation inexistante"""
     conversation_id = str(uuid4())
-    assert Utils.delete_conversation_messages(conversation_id) == True
+    assert Utils.delete_conversation_messages(conversation_id)
     messages = Utils.get_conversation_messages(conversation_id)
     assert len(messages) == 0
 
