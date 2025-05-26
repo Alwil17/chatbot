@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from mangum import Mangum
@@ -6,7 +6,7 @@ from mistralai import Mistral
 from mistralai import ChatCompletionResponse
 from datetime import datetime, timezone
 from uuid import uuid4
-from typing import Dict, List, Optional, Any, AsyncGenerator
+from typing import Dict, List, Optional, Any, AsyncGenerator, Union, Awaitable, Callable
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -21,6 +21,12 @@ client = Mistral(api_key=api_key)
 
 # Création du limiteur de taux
 limiter = Limiter(key_func=get_remote_address)
+
+# Type pour le handler d'exception
+ExceptionHandler = Union[
+    Callable[[Request, Exception], Union[Response, Awaitable[Response]]],
+    Callable[[WebSocket, Exception], Awaitable[None]],
+]
 
 
 @asynccontextmanager
