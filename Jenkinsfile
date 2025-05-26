@@ -133,9 +133,10 @@ pipeline {
                     // Get the API URL from CloudFormation outputs
                     def apiUrl = sh(
                         script: """
-                            aws cloudformation describe-stacks --stack-name multi-stack-${BRANCH_NAME} \
+                            aws cloudformation describe-stacks \
+                            --stack-name multi-stack-${BRANCH_NAME} \
                             --region eu-west-3 \
-                            --query 'Stacks[0].Outputs[?OutputKey==\`ApiUrl\`].OutputValue' \
+                            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
                             --output text
                         """,
                         returnStdout: true
