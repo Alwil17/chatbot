@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message, Chat
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -7,6 +7,7 @@ from telegram.ext import (
     ContextTypes,
     CallbackQueryHandler,
 )
+from typing import Optional
 from .config import env_vars
 from .utils import Utils
 from datetime import datetime
@@ -31,6 +32,9 @@ class TelegramBot:
 
     async def _start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /start"""
+        if not update.message:
+            return
+
         welcome_message = (
             "👋 Bonjour! Je suis votre assistant conversationnel.\n\n"
             "Je peux vous aider avec diverses tâches et répondre à vos questions.\n\n"
@@ -45,6 +49,9 @@ class TelegramBot:
 
     async def _help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /help"""
+        if not update.message:
+            return
+
         help_message = (
             "📚 Guide d'utilisation\n\n"
             "1️⃣ Conversation normale:\n"
@@ -66,6 +73,9 @@ class TelegramBot:
 
     async def _settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /settings"""
+        if not update.message:
+            return
+
         keyboard = [
             [
                 InlineKeyboardButton("🔔 Notifications", callback_data="settings_notifications"),
@@ -83,6 +93,9 @@ class TelegramBot:
 
     async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /stats"""
+        if not update.effective_chat or not update.message:
+            return
+
         chat_id = str(update.effective_chat.id)
         try:
             # Récupérer les statistiques depuis DynamoDB
@@ -120,6 +133,9 @@ class TelegramBot:
 
     async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /clear"""
+        if not update.message:
+            return
+
         keyboard = [
             [
                 InlineKeyboardButton("✅ Oui, effacer", callback_data="clear_confirm"),
@@ -135,8 +151,14 @@ class TelegramBot:
 
     async def _button_click(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les clics sur les boutons inline"""
+        if not update.callback_query or not update.effective_chat:
+            return
+
         query = update.callback_query
         await query.answer()
+
+        if not query.data:
+            return
 
         if query.data.startswith("settings_"):
             setting = query.data.split("_")[1]
@@ -168,6 +190,9 @@ class TelegramBot:
 
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les messages texte reçus"""
+        if not update.effective_chat or not update.message:
+            return
+
         chat_id = str(update.effective_chat.id)
         message_text = update.message.text
 
@@ -180,7 +205,7 @@ class TelegramBot:
             )
 
             # Utiliser le chat_id de Telegram comme conversation_id
-            response = await chat(message_text, conversation_id=chat_id)
+            response = await chat(update, message_text, conversation_id=chat_id)
 
             # Envoyer la réponse à l'utilisateur
             await update.message.reply_text(response["answer"]["S"])
@@ -198,11 +223,11 @@ class TelegramBot:
         Utils.log_info(f"Webhook set to {webhook_url}")
 
     async def handle_update(self, update_data: dict) -> None:
-        """Gère les mises à jour reçues via webhook"""
+        """Gère les mises à jour reçues via le webhook"""
         async with self.application:
-            await self.application.process_update(
-                Update.de_json(data=update_data, bot=self.application.bot)
-            )
+            update = Update.de_json(update_data, self.application.bot)
+            if update:
+                await self.application.process_update(update)
 
 
 telegram_bot = TelegramBot()
