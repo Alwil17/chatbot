@@ -141,9 +141,15 @@ class TelegramBot:
         
         elif query.data.startswith("clear_"):
             action = query.data.split("_")[1]
+            chat_id = str(update.effective_chat.id)
             if action == "confirm":
-                # Ici, on pourrait ajouter la logique pour effacer l'historique
-                await query.edit_message_text("🗑️ Historique effacé avec succès!")
+                try:
+                    # Supprimer les messages
+                    Utils.delete_conversation_messages(chat_id)
+                    await query.edit_message_text("🗑️ Historique effacé avec succès!")
+                except Exception as e:
+                    Utils.log_error(f"Erreur lors de la suppression de l'historique: {str(e)}")
+                    await query.edit_message_text("❌ Une erreur s'est produite lors de la suppression de l'historique.")
             else:
                 await query.edit_message_text("❌ Opération annulée.")
 
