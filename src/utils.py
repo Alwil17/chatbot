@@ -94,13 +94,13 @@ class Utils:
         try:
             Utils.log_info(f"Tentative d'insertion dans DynamoDB: {json.dumps(item, indent=2)}")
             dynamo_client = Utils.get_dynamo_client()
-            
+
             # Log environment information
             Utils.log_info("Environment variables:")
             Utils.log_info(f"- AWS_LAMBDA_FUNCTION_NAME: {os.getenv('AWS_LAMBDA_FUNCTION_NAME')}")
             Utils.log_info(f"- AWS_REGION: {env_vars.AWS_REGION}")
             Utils.log_info(f"- DYNAMO_TABLE: {env_vars.DYNAMO_TABLE}")
-            
+
             # Attempt the operation
             dynamo_client.put_item(
                 TableName=env_vars.DYNAMO_TABLE,
