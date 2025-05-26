@@ -26,6 +26,13 @@ def aws_credentials() -> None:
     os.environ.pop("AWS_PROFILE", None)
 
 
+@pytest.fixture(autouse=True)
+def mock_aws_services():
+    """Fixture pour mocker tous les services AWS"""
+    with mock_aws():
+        yield
+
+
 @pytest.fixture
 def test_app() -> FastAPI:
     """Fixture pour l'application FastAPI"""
@@ -39,7 +46,6 @@ def client() -> TestClient:
 
 
 @pytest.fixture
-@mock_aws
 def mock_dynamo(aws_credentials: None) -> Table:
     """Fixture pour mocker DynamoDB"""
     # Créer une table de test
