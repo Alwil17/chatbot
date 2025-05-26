@@ -5,7 +5,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     ENV_NAME: str = "alwil17"
-    AWS_REGION_NAME: str = ""
+    AWS_REGION: str = ""
     DYNAMO_TABLE: str = ""
     AWS_PROFILE: str = ""
     AWS_ACCESS_KEY_ID: str = ""
