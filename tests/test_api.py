@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from src.main import app
-from mistralai import Chat
+from mistralai import Mistral
 from mypy_boto3_dynamodb.service_resource import Table
 
 
@@ -25,14 +25,12 @@ def test_rate_limit() -> None:
     del client1
 
 
-@pytest.mark.asyncio
-async def test_chat_endpoint(client: TestClient, mock_dynamo: Table) -> None:
+def test_chat_endpoint(client: TestClient, mock_dynamo: Table) -> None:
     """Test l'endpoint de chat"""
     mock_response = MagicMock()
-    mock_response.id = "test-id"
     mock_response.choices = [MagicMock(message=MagicMock(content="Test response"))]
 
-    with patch.object(Chat, "complete", return_value=mock_response):
+    with patch("src.handlers.client.chat.complete", return_value=mock_response):
         response = client.get("/chat?question=Test question")
         assert response.status_code == 200
         data = response.json()
@@ -55,12 +53,13 @@ def test_get_conversation(
 
     data = response.json()
     assert "messages" in data
-    assert len(data["messages"]) == 2
+    assert len(data["messages"]) == 3
 
     # Vérifier que les messages sont dans le bon ordre
     messages = data["messages"]
-    assert messages[0]["question"] == "Test question 1"
-    assert messages[1]["question"] == "Test question 2"
+    assert messages[0]["question"]["S"] == "Test question 0"
+    assert messages[1]["question"]["S"] == "Test question 1"
+    assert messages[2]["question"]["S"] == "Test question 2"
 
 
 def test_get_nonexistent_conversation(client: TestClient, mock_dynamo: Table) -> None:
@@ -70,8 +69,7 @@ def test_get_nonexistent_conversation(client: TestClient, mock_dynamo: Table) ->
     assert response.json() == {"messages": []}
 
 
-@pytest.mark.asyncio
-async def test_telegram_webhook(client: TestClient, mock_dynamo: Table) -> None:
+def test_telegram_webhook(client: TestClient, mock_dynamo: Table) -> None:
     """Test l'endpoint webhook Telegram"""
     test_update = {
         "update_id": 123456789,
