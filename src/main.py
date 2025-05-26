@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from mangum import Mangum
 from mistralai import Mistral
-from mistralai import ChatMessage, ChatCompletionResponse
+from mistralai import ChatCompletionResponse
 from datetime import datetime, timezone
 from uuid import uuid4
 from typing import Dict, List, Optional, Any, AsyncGenerator
