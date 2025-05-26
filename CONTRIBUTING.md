@@ -1,146 +1,146 @@
-# Contributing to Chatbot API with Telegram & DynamoDB
+# Guide de Contribution
 
-Thank you for your interest in contributing!  
-We welcome all improvements, bug fixes, documentation, and ideas.
+Merci de votre intérêt pour contribuer !  
+Nous accueillons toutes les améliorations, corrections de bugs, documentation et idées.
 
 ---
 
-## How to Contribute
+## Comment Contribuer
 
-1. **Fork the repository**  
-   Click the "Fork" button at the top right of this page.
+1. **Forkez le dépôt**  
+   Cliquez sur le bouton "Fork" en haut à droite de cette page.
 
-2. **Clone your fork**
+2. **Clonez votre fork**
    ```bash
    git clone https://github.com/Alwil17/chatbot.git
    cd chatbot
    ```
 
-3. **Create a new branch**
+3. **Créez une nouvelle branche**
    ```bash
-   git checkout -b my-feature
+   git checkout -b ma-fonctionnalite
    ```
 
-4. **Install dependencies**
+4. **Installez les dépendances**
    ```bash
    python -m venv .venv
-   source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+   source .venv/bin/activate  # ou .venv\Scripts\activate sur Windows
    pip install -r requirements.txt
    ```
 
-5. **Set up your environment**
-   - Copy `.env.example` to `.env`
-   - Fill in your AWS credentials, Mistral API key, and Telegram bot token
-   - Create your DynamoDB table following the README instructions
+5. **Configurez votre environnement**
+   - Copiez `.env.example` vers `.env`
+   - Remplissez avec vos identifiants AWS, clé API Mistral et token Telegram
+   - Créez votre table DynamoDB en suivant les instructions du README
 
-6. **Make your changes**
-   - Add features, fix bugs, or improve documentation
-   - Follow the project's code style and structure
-   - Ensure no DynamoDB scans are used in your code
+6. **Faites vos modifications**
+   - Ajoutez des fonctionnalités, corrigez des bugs ou améliorez la documentation
+   - Suivez le style et la structure du projet
+   - Assurez-vous de ne jamais utiliser de scan DynamoDB
 
-7. **Test your changes**
+7. **Testez vos modifications**
    ```bash
    pytest
    ```
 
-8. **Commit and push**
+8. **Committez et poussez**
    ```bash
    git add .
-   git commit -m "Describe your change"
-   git push origin my-feature
+   git commit -m "Description de votre modification"
+   git push origin ma-fonctionnalite
    ```
 
-9. **Open a Pull Request**
-   - Go to your fork on GitHub
-   - Click "Compare & pull request"
-   - Describe your changes and submit
+9. **Ouvrez une Pull Request**
+   - Allez sur votre fork sur GitHub
+   - Cliquez sur "Compare & pull request"
+   - Décrivez vos modifications et soumettez
 
 ---
 
-## Branch Naming & Pull Request Rules
+## Convention de Nommage des Branches
 
-- **Branch naming convention:**
-  - For new features: `feat/short-description`
-  - For bug fixes: `bugfix/short-description`
-  - For maintenance or chores: `chore/short-description`
-  - For documentation: `docs/short-description`
-  - Example:  
+- **Convention de nommage :**
+  - Pour les nouvelles fonctionnalités : `feat/description-courte`
+  - Pour les corrections de bugs : `bugfix/description-courte`
+  - Pour la maintenance : `chore/description-courte`
+  - Pour la documentation : `docs/description-courte`
+  - Exemple :  
     ```
-    git checkout -b feat/add-conversation-context
-    git checkout -b bugfix/fix-telegram-webhook
+    git checkout -b feat/ajout-contexte-conversation
+    git checkout -b bugfix/correction-webhook-telegram
     ```
 
-- **Pull Request Guidelines:**
-  - Use a clear and descriptive title (e.g. `feat: add conversation context support`)
-  - In the PR description, explain **what** you changed and **why**
-  - Reference related issues by number if applicable (e.g. `Closes #42`)
-  - Make sure your branch is up to date with the target branch (usually `main`)
-  - Ensure all tests pass before requesting a review
-  - Assign reviewers if possible
+- **Règles pour les Pull Requests :**
+  - Utilisez un titre clair et descriptif (ex : `feat: ajout du support du contexte de conversation`)
+  - Dans la description, expliquez **quoi** et **pourquoi**
+  - Référencez les issues concernées si applicable (ex : `Résout #42`)
+  - Assurez-vous que votre branche est à jour avec la branche cible (généralement `main`)
+  - Vérifiez que tous les tests passent avant de demander une revue
+  - Assignez des relecteurs si possible
 
 ---
 
-## Code Style & Best Practices
+## Style de Code et Bonnes Pratiques
 
-- Use [PEP8](https://www.python.org/dev/peps/pep-0008/) conventions
-- Use type hints and docstrings
-- Keep functions and classes small and focused
-- **DynamoDB Best Practices:**
-  - Never use table scans
-  - Always use indexes for queries
-  - Use batch operations when possible
-  - Keep item sizes small
-- **Telegram Bot Best Practices:**
-  - Handle all possible message types
-  - Implement proper error handling
-  - Keep webhook endpoints secure
-  - Use conversation context appropriately
+- Suivez les conventions [PEP8](https://www.python.org/dev/peps/pep-0008/)
+- Utilisez les annotations de type et les docstrings
+- Gardez les fonctions et classes concises et focalisées
+- **Bonnes Pratiques DynamoDB :**
+  - N'utilisez jamais de scan de table
+  - Utilisez toujours des index pour les requêtes
+  - Utilisez les opérations par lots quand possible
+  - Gardez la taille des items réduite
+- **Bonnes Pratiques Telegram :**
+  - Gérez tous les types de messages possibles
+  - Implémentez une gestion d'erreurs appropriée
+  - Sécurisez les endpoints webhook
+  - Utilisez le contexte de conversation de manière appropriée
 
 ---
 
-## Testing
+## Tests
 
-- Add or update tests for your changes
-- Make sure all tests pass with `pytest`
-- Test both API and Telegram bot functionality
-- Test DynamoDB operations with mocked responses
-- If you add new endpoints, add corresponding tests in `tests/`
+- Ajoutez ou mettez à jour les tests pour vos modifications
+- Assurez-vous que tous les tests passent avec `pytest`
+- Testez à la fois l'API et les fonctionnalités du bot Telegram
+- Testez les opérations DynamoDB avec des réponses mockées
+- Si vous ajoutez de nouveaux endpoints, ajoutez les tests correspondants dans `tests/`
 
 ---
 
 ## Documentation
 
-- Update the `README.md` or docstrings if your change affects usage or API
-- Add comments to clarify complex code
-- Document any new environment variables
-- Keep DynamoDB table structure documentation up to date
+- Mettez à jour le `README.md` ou les docstrings si votre modification affecte l'utilisation ou l'API
+- Ajoutez des commentaires pour clarifier le code complexe
+- Documentez toute nouvelle variable d'environnement
+- Maintenez à jour la documentation de la structure de la table DynamoDB
 
 ---
 
-## Suggestions & Issues
+## Suggestions et Problèmes
 
-- For feature requests or bug reports, please [open an issue](https://github.com/Alwil17/chatbot/issues)
-- Be clear and provide as much context as possible
-- For DynamoDB issues, include table structure and access patterns
-- For Telegram bot issues, include message logs if possible
-
----
-
-## Code of Conduct
-
-Be respectful and constructive.  
-See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) if available.
+- Pour les demandes de fonctionnalités ou les rapports de bugs, veuillez [ouvrir une issue](https://github.com/Alwil17/chatbot/issues)
+- Soyez clair et fournissez autant de contexte que possible
+- Pour les problèmes DynamoDB, incluez la structure de la table et les patterns d'accès
+- Pour les problèmes Telegram, incluez les logs des messages si possible
 
 ---
 
-## Important Notes
+## Code de Conduite
 
-- Never commit sensitive information (API keys, tokens, credentials)
-- Never commit the `.env` file
-- Always test DynamoDB operations locally first
-- Be careful with webhook URLs in development
-- Consider rate limits for both Telegram and Mistral AI APIs
+Soyez respectueux et constructif.  
+Consultez le fichier [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
-Thank you for helping make this project better! 🚀 
+## Notes Importantes
+
+- Ne committez jamais d'informations sensibles (clés API, tokens, credentials)
+- Ne committez jamais le fichier `.env`
+- Testez toujours les opérations DynamoDB localement d'abord
+- Faites attention aux URLs webhook en développement
+- Prenez en compte les limites de taux pour les APIs Telegram et Mistral AI
+
+---
+
+Merci de nous aider à améliorer ce projet ! 🚀 
