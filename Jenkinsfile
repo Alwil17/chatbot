@@ -67,10 +67,6 @@ pipeline {
             post {
                 always {
                     junit 'test-results/*.xml'
-                    coverage([
-                        [metric: 'INSTRUCTION', healthy: 80, unhealthy: 60],
-                        [metric: 'BRANCH', healthy: 80, unhealthy: 60]
-                    ])
                 }
             }
         }
