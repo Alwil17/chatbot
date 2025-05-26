@@ -4,6 +4,8 @@ import boto3
 from moto import mock_aws
 from datetime import datetime, timezone
 from uuid import uuid4
+from fastapi import FastAPI
+from mypy_boto3_dynamodb.service_resource import Table
 
 from src.main import app
 from src.config import env_vars
@@ -11,7 +13,7 @@ from src.utils import Utils
 
 
 @pytest.fixture
-def aws_credentials():
+def aws_credentials() -> None:
     """Fixture pour les credentials AWS de test"""
     import os
 
@@ -24,20 +26,20 @@ def aws_credentials():
 
 
 @pytest.fixture
-def test_app():
+def test_app() -> FastAPI:
     """Fixture pour l'application FastAPI"""
     return app
 
 
 @pytest.fixture
-def client():
+def client() -> TestClient:
     """Fixture pour le client de test FastAPI"""
     return TestClient(app)
 
 
 @pytest.fixture
 @mock_aws
-def mock_dynamo(aws_credentials):
+def mock_dynamo(aws_credentials: None) -> Table:
     """Fixture pour mocker DynamoDB"""
     # Créer une table de test
     dynamo = boto3.resource("dynamodb", region_name="eu-west-3")
@@ -69,7 +71,7 @@ def mock_dynamo(aws_credentials):
 
 
 @pytest.fixture
-def sample_conversation(mock_dynamo):
+def sample_conversation(mock_dynamo: Table) -> tuple[str, list[dict[str, dict[str, str]]]]:
     """Fixture pour créer des données de test"""
     conversation_id = str(uuid4())
     messages = [
