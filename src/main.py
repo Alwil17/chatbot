@@ -22,11 +22,13 @@ client = Mistral(api_key=api_key)
 # Création du limiteur de taux
 limiter = Limiter(key_func=get_remote_address)
 
+
 @asynccontextmanager
 async def app_lifespan(application: FastAPI):
     Utils.log_info("Starting the application")
     await telegram_bot.setup_webhook()
     yield
+
 
 app = FastAPI(
     title="ChatBot API",
@@ -45,10 +47,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 @limiter.limit("5/minute")
 async def root(request: Request):
     return {"msg": "Hello World"}
+
 
 @app.post(env_vars.TELEGRAM_WEBHOOK_PATH)
 @limiter.limit("60/minute")
@@ -58,11 +62,12 @@ async def telegram_webhook(request: Request):
     await telegram_bot.handle_update(update_data)
     return {"status": "ok"}
 
+
 @app.get("/chat")
 @limiter.limit("30/minute")
 async def chat(request: Request, question: str, conversation_id: str = None):
     Utils.log_info(f"Nouvelle question reçue: {question}")
-    
+
     if not conversation_id:
         conversation_id = str(uuid4())
         Utils.log_info(f"Nouvelle conversation créée avec ID: {conversation_id}")
@@ -75,30 +80,24 @@ async def chat(request: Request, question: str, conversation_id: str = None):
                     "role": "user",
                     "content": question,
                 },
-            ]
+            ],
         )
         Utils.log_info("Réponse reçue de Mistral AI")
-        
+
         timestamp = datetime.now(timezone.utc).isoformat()
         response = {
             "id": {
                 "S": f"{chat_response.id}",
             },
-            "conversation_id": {
-                "S": conversation_id
-            },
-            "timestamp": {
-                "S": timestamp
-            },
+            "conversation_id": {"S": conversation_id},
+            "timestamp": {"S": timestamp},
             "question": {
                 "S": f"{question}",
             },
             "answer": {
                 "S": f"{chat_response.choices[0].message.content}",
             },
-            "source": {
-                "S": "api"
-            }
+            "source": {"S": "api"},
         }
         Utils.insert_data(response)
         Utils.log_info("Traitement de la question terminé avec succès")
@@ -107,6 +106,7 @@ async def chat(request: Request, question: str, conversation_id: str = None):
         Utils.log_error(f"Erreur lors du traitement de la question: {str(e)}")
         raise e
 
+
 @app.get("/conversations/{conversation_id}")
 @limiter.limit("30/minute")
 async def get_conversation(request: Request, conversation_id: str):
@@ -114,11 +114,13 @@ async def get_conversation(request: Request, conversation_id: str):
     messages = Utils.get_conversation_messages(conversation_id)
     return {"messages": messages}
 
+
 @app.get("/chats/{user_id}")
 @limiter.limit("30/minute")
 async def get_user_chats(request: Request, user_id: str):
     """Récupère toutes les conversations d'un utilisateur"""
     messages = Utils.get_user_conversations(user_id)
     return {"conversations": messages}
+
 
 handler = Mangum(app)
