@@ -10,7 +10,6 @@ from telegram.ext import (
 from .config import env_vars
 from .utils import Utils
 from datetime import datetime
-from .handlers import handle_telegram_message
 
 
 class TelegramBot:
@@ -99,11 +98,11 @@ class TelegramBot:
         chat_id = str(update.effective_chat.id)
         try:
             # Récupérer les statistiques depuis DynamoDB
-            messages = await Utils.get_conversation_messages(chat_id)
+            messages = Utils.get_conversation_messages(chat_id)
 
             total_messages = len(messages)
             if total_messages > 0:
-                first_message = min(messages, key=lambda x: x["timestamp"]["S"])
+                first_message = min(messages, key=lambda x: x["timestamp"])
                 first_date = datetime.fromisoformat(first_message["timestamp"])
                 average_messages_per_day = total_messages / max(
                     1, (datetime.now() - first_date).days
@@ -178,7 +177,7 @@ class TelegramBot:
             if action == "confirm":
                 try:
                     # Supprimer les messages
-                    await Utils.delete_conversation_messages(chat_id)
+                    Utils.delete_conversation_messages(chat_id)
                     await query.edit_message_text("🗑️ Historique effacé avec succès!")
                 except Exception as e:
                     Utils.log_error(f"Erreur lors de la suppression de l'historique: {str(e)}")
@@ -190,19 +189,22 @@ class TelegramBot:
 
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les messages texte reçus"""
-        if not update.effective_chat or not update.message or not update.message.text:
+        if not update.effective_chat or not update.message:
             return
 
         chat_id = str(update.effective_chat.id)
         message_text = update.message.text
 
         try:
+            # Appel à l'API Mistral via les fonctions existantes
+            from .main import chat
+
             Utils.log_info(
                 f"Message reçu de Telegram - Chat ID: {chat_id}, Message: {message_text}"
             )
 
             # Utiliser le chat_id de Telegram comme conversation_id
-            response = await handle_telegram_message(update, message_text, conversation_id=chat_id)
+            response = await chat(update, message_text, conversation_id=chat_id)
 
             # Envoyer la réponse à l'utilisateur
             await update.message.reply_text(response["answer"]["S"])
