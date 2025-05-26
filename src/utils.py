@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 from boto3.session import Session
 from logging import Logger
 import asyncio
@@ -19,10 +19,10 @@ class RateLimiter:
     def __init__(self, max_requests: int, time_window: float = 1.0):
         self.max_requests = max_requests
         self.time_window = time_window
-        self.requests = []
+        self.requests: List[float] = []  # Liste des timestamps des requêtes
         self._lock = asyncio.Lock()
 
-    async def acquire(self):
+    async def acquire(self) -> None:
         """Acquérir une autorisation d'accès"""
         async with self._lock:
             now = time.time()
@@ -40,8 +40,8 @@ class RateLimiter:
 
 
 class Utils:
-    _instance = None
-    _dynamo_client = None
+    _instance: Optional[Any] = None
+    _dynamo_client: Optional[Any] = None
     _table_name = "conversations"
     _semaphore = asyncio.Semaphore(5)  # Limite à 5 connexions simultanées (WCU)
     _rate_limiter = RateLimiter(max_requests=5, time_window=1.0)  # 5 requêtes par seconde (RCU/WCU)
@@ -91,7 +91,7 @@ class Utils:
         )
 
     @classmethod
-    def get_dynamo_client(cls):
+    def get_dynamo_client(cls) -> Any:
         """Obtenir le client DynamoDB avec configuration optimisée"""
         if cls._dynamo_client is None:
             config = Config(
@@ -103,11 +103,12 @@ class Utils:
                 region_name=env_vars.AWS_REGION_NAME,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
+                config=config,
             )
         return cls._dynamo_client
 
     @classmethod
-    async def insert_data(cls, item: Dict[str, Any]) -> None:
+    async def insert_data(cls, item: Dict[str, Dict[str, str]]) -> None:
         """Insérer des données avec contrôle de concurrence"""
         async with cls._semaphore:
             await cls._rate_limiter.acquire()
@@ -115,7 +116,7 @@ class Utils:
             client.put_item(TableName=cls._table_name, Item=item)
 
     @classmethod
-    async def get_conversation_messages(cls, conversation_id: str) -> list:
+    async def get_conversation_messages(cls, conversation_id: str) -> List[Dict[str, Any]]:
         """Récupérer les messages avec contrôle de concurrence"""
         async with cls._semaphore:
             await cls._rate_limiter.acquire()
@@ -128,7 +129,7 @@ class Utils:
             return response.get("Items", [])
 
     @classmethod
-    async def batch_write(cls, items: list) -> None:
+    async def batch_write(cls, items: List[Dict[str, Dict[str, str]]]) -> None:
         """Écriture par lots avec contrôle de concurrence"""
         async with cls._semaphore:
             await cls._rate_limiter.acquire()
@@ -144,7 +145,9 @@ class Utils:
                 client.batch_write_item(RequestItems=request_items)
 
     @classmethod
-    def configure_table_throughput(cls, read_capacity: int = 1000, write_capacity: int = 1000):
+    def configure_table_throughput(
+        cls, read_capacity: int = 1000, write_capacity: int = 1000
+    ) -> None:
         """Configurer la capacité de la table"""
         client = cls.get_dynamo_client()
         client.update_table(
@@ -156,7 +159,7 @@ class Utils:
         )
 
     @staticmethod
-    def get_user_conversations(user_id: str) -> list:
+    async def get_user_conversations(user_id: str) -> List[Dict[str, Any]]:
         """Récupère toutes les conversations d'un utilisateur en utilisant l'index"""
         dynamo_resource = boto3.resource(
             "dynamodb",
@@ -175,7 +178,8 @@ class Utils:
 
         # Groupe les messages par conversation_id
         conversations: Dict[str, Dict[str, Any]] = {}
-        for item in response.get("Items", []):
+        items = response.get("Items", [])
+        for item in items:
             conv_id = item.get("conversation_id")
             if conv_id not in conversations:
                 conversations[conv_id] = {
@@ -189,11 +193,11 @@ class Utils:
         return list(conversations.values())
 
     @staticmethod
-    def delete_conversation_messages(conversation_id: str) -> bool:
+    async def delete_conversation_messages(conversation_id: str) -> bool:
         """Supprime tous les messages d'une conversation spécifique"""
         try:
             # Récupérer d'abord tous les messages de la conversation
-            messages = Utils.get_conversation_messages(conversation_id)
+            messages = await Utils.get_conversation_messages(conversation_id)
 
             if not messages:
                 Utils.log_info(f"Aucun message à supprimer pour la conversation {conversation_id}")
