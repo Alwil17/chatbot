@@ -2,6 +2,11 @@
 AWS_REGION ?= eu-west-3
 AWS_PROFILE ?= "esgis_profile"
 
+# Default values for deployment
+TELEGRAM_BOT_TOKEN ?= ""
+MISTRAL_API_KEY ?= ""
+TELEGRAM_WEBHOOK_URL ?= ""
+
 .PHONY: clean .venv install build deploy-local deploy serve test test-endpoint format lint type-check quality security-scan
 
 clean:
@@ -29,10 +34,14 @@ deploy-local:
 deploy:
 	@echo "Deploying to " ${env}
 	# Extract env from the branch name
-
 	sam deploy --resolve-s3 --template-file .aws-sam/build/template.yaml --stack-name multi-stack-${env} \
-         --capabilities CAPABILITY_IAM --region ${AWS_REGION} --parameter-overrides EnvironmentName=${env} --no-fail-on-empty-changeset
-
+         --capabilities CAPABILITY_IAM --region ${AWS_REGION} \
+         --parameter-overrides \
+             EnvironmentName=${env} \
+             TelegramBotToken=${TELEGRAM_BOT_TOKEN} \
+             MistralApiKey=${MISTRAL_API_KEY} \
+             TelegramWebhookUrl=${TELEGRAM_WEBHOOK_URL} \
+         --no-fail-on-empty-changeset
 
 serve:
 	.venv/bin/fastapi dev src/main.py
