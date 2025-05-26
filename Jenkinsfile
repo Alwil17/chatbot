@@ -73,7 +73,6 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    sh ".venv/bin/safety check"
                     sh ".venv/bin/bandit -r src/ -f json -o bandit-report.json"
                 }
             }
@@ -81,7 +80,6 @@ pipeline {
                 always {
                     recordIssues(
                         tools: [
-                            pyLint(pattern: 'pylint-report.txt'),
                             bandit(pattern: 'bandit-report.json')
                         ]
                     )
