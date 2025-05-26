@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from mangum import Mangum
 import json, boto3
 from mistralai import Mistral
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -79,7 +79,7 @@ async def chat(request: Request, question: str, conversation_id: str = None):
         )
         Utils.log_info("Réponse reçue de Mistral AI")
         
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         response = {
             "id": {
                 "S": f"{chat_response.id}",
