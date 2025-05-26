@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 from fastapi import FastAPI
 from mypy_boto3_dynamodb.service_resource import Table
+from typing import Any, List, Dict, Tuple
 
 from src.main import app
 from src.config import env_vars
@@ -71,29 +72,22 @@ def mock_dynamo(aws_credentials: None) -> Table:
 
 
 @pytest.fixture
-def sample_conversation(mock_dynamo: Table) -> tuple[str, list[dict[str, dict[str, str]]]]:
-    """Fixture pour créer des données de test"""
+async def sample_conversation(mock_dynamo: Table) -> Tuple[str, List[Dict[str, Any]]]:
+    """Crée une conversation de test avec quelques messages"""
     conversation_id = str(uuid4())
-    messages = [
-        {
-            "id": {"S": str(uuid4())},
-            "conversation_id": {"S": conversation_id},
-            "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
-            "question": {"S": "Test question 1"},
-            "answer": {"S": "Test answer 1"},
-            "source": {"S": "api"},
-        },
-        {
-            "id": {"S": str(uuid4())},
-            "conversation_id": {"S": conversation_id},
-            "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
-            "question": {"S": "Test question 2"},
-            "answer": {"S": "Test answer 2"},
-            "source": {"S": "api"},
-        },
-    ]
+    messages = []
 
-    for message in messages:
-        Utils.insert_data(message)
+    # Créer quelques messages de test
+    for i in range(3):
+        message = {
+            "id": {"S": str(uuid4())},
+            "conversation_id": {"S": conversation_id},
+            "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
+            "question": {"S": f"Test question {i}"},
+            "answer": {"S": f"Test answer {i}"},
+            "source": {"S": "api"},
+        }
+        messages.append(message)
+        await Utils.insert_data(message)
 
     return conversation_id, messages
