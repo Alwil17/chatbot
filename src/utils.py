@@ -1,9 +1,7 @@
 import json
 import logging
-from typing import List, Any, Dict, Optional
-from boto3.resources.base import ServiceResource
+from typing import List, Any, Dict
 from boto3.session import Session
-from mypy_boto3_dynamodb.service_resource import Table
 from logging import Logger
 
 import boto3
