@@ -56,19 +56,19 @@ class Utils:
         # Check if running in Lambda
         is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
         Utils.log_info(f"Running in Lambda environment: {is_lambda}")
-        Utils.log_info(f"AWS Region: {env_vars.AWS_REGION_NAME}")
+        Utils.log_info(f"AWS Region: {env_vars.AWS_REGION}")
         Utils.log_info(f"DynamoDB Table: {env_vars.DYNAMO_TABLE}")
 
         if is_lambda:
             # In Lambda, use the role credentials
             Utils.log_info("Using Lambda IAM role credentials")
-            return boto3.client("dynamodb", region_name=env_vars.AWS_REGION_NAME)
+            return boto3.client("dynamodb", region_name=env_vars.AWS_REGION)
         else:
             # Local development - use explicit credentials
             Utils.log_info("Using local development credentials")
             return boto3.client(
                 "dynamodb",
-                region_name=env_vars.AWS_REGION_NAME,
+                region_name=env_vars.AWS_REGION,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
             )
@@ -79,12 +79,12 @@ class Utils:
         # Check if running in Lambda
         if os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
             # In Lambda, use the role credentials
-            return boto3.resource("dynamodb", region_name=env_vars.AWS_REGION_NAME)
+            return boto3.resource("dynamodb", region_name=env_vars.AWS_REGION)
         else:
             # Local development - use explicit credentials
             return boto3.resource(
                 "dynamodb",
-                region_name=env_vars.AWS_REGION_NAME,
+                region_name=env_vars.AWS_REGION,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
             )
@@ -94,6 +94,14 @@ class Utils:
         try:
             Utils.log_info(f"Tentative d'insertion dans DynamoDB: {json.dumps(item, indent=2)}")
             dynamo_client = Utils.get_dynamo_client()
+            
+            # Log environment information
+            Utils.log_info("Environment variables:")
+            Utils.log_info(f"- AWS_LAMBDA_FUNCTION_NAME: {os.getenv('AWS_LAMBDA_FUNCTION_NAME')}")
+            Utils.log_info(f"- AWS_REGION: {env_vars.AWS_REGION}")
+            Utils.log_info(f"- DYNAMO_TABLE: {env_vars.DYNAMO_TABLE}")
+            
+            # Attempt the operation
             dynamo_client.put_item(
                 TableName=env_vars.DYNAMO_TABLE,
                 Item=item,
@@ -102,6 +110,8 @@ class Utils:
             return True
         except Exception as e:
             Utils.log_error(f"Erreur lors de l'insertion dans DynamoDB: {str(e)}")
+            Utils.log_error(f"Type d'erreur: {type(e).__name__}")
+            Utils.log_error(f"Details de l'erreur: {getattr(e, 'response', {}).get('Error', {})}")
             raise e
 
     @staticmethod
