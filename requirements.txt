@@ -1,7 +1,9 @@
 # API et Framework
-fastapi>=0.68.0
-uvicorn>=0.15.0
+fastapi>=0.109.0
+uvicorn>=0.27.0
 python-dotenv>=0.19.0
+mangum>=0.17.0
+slowapi>=0.1.9
 
 # AWS
 boto3>=1.26.0
