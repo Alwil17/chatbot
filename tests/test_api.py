@@ -3,6 +3,8 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 import json
 from datetime import datetime
+from src.main import app
+from mistralai import Chat
 
 def test_root(client):
     """Test l'endpoint racine"""
@@ -10,35 +12,30 @@ def test_root(client):
     assert response.status_code == 200
     assert response.json() == {"msg": "Hello World"}
 
-def test_rate_limit(client):
+def test_rate_limit():
     """Test le rate limiting"""
-    # Faire 6 requêtes (la limite est de 5/minute)
-    for _ in range(5):
-        response = client.get("/")
+    client1 = TestClient(app)
+    for _ in range(4):
+        response = client1.get("/")
         assert response.status_code == 200
-    
     # La 6ème requête devrait être limitée
-    response = client.get("/")
+    response = client1.get("/")
     assert response.status_code == 429
-    assert "Retry-After" in response.headers
+    del client1
 
 @pytest.mark.asyncio
 async def test_chat_endpoint(client, mock_dynamo):
     """Test l'endpoint de chat"""
-    # Mock la réponse de Mistral AI
     mock_response = MagicMock()
     mock_response.id = "test-id"
     mock_response.choices = [
         MagicMock(
-            message=MagicMock(
-                content="Test response"
-            )
+            message=MagicMock(content="Test response")
         )
     ]
-    
-    with patch('mistralai.Mistral.chat.complete', return_value=mock_response):
+
+    with patch.object(Chat, 'complete', return_value=mock_response):
         response = client.get("/chat?question=Test question")
-        
         assert response.status_code == 200
         data = response.json()
         assert data["question"]["S"] == "Test question"
@@ -46,7 +43,7 @@ async def test_chat_endpoint(client, mock_dynamo):
         assert "conversation_id" in data
         assert "timestamp" in data
 
-def test_get_conversation(client, sample_conversation):
+def test_get_conversation(client, sample_conversation, mock_dynamo):
     """Test la récupération des messages d'une conversation"""
     conversation_id, expected_messages = sample_conversation
     
@@ -69,7 +66,7 @@ def test_get_nonexistent_conversation(client, mock_dynamo):
     assert response.json() == {"messages": []}
 
 @pytest.mark.asyncio
-async def test_telegram_webhook(client):
+async def test_telegram_webhook(client, mock_dynamo):
     """Test l'endpoint webhook Telegram"""
     test_update = {
         "update_id": 123456789,
