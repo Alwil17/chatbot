@@ -43,9 +43,9 @@ async def test_chat_endpoint(client: TestClient, mock_dynamo: Table) -> None:
 
 
 def test_get_conversation(
-    client: TestClient, 
-    sample_conversation: tuple[str, list[dict[str, dict[str, str]]]], 
-    mock_dynamo: Table
+    client: TestClient,
+    sample_conversation: tuple[str, list[dict[str, dict[str, str]]]],
+    mock_dynamo: Table,
 ) -> None:
     """Test la récupération des messages d'une conversation"""
     conversation_id, expected_messages = sample_conversation
