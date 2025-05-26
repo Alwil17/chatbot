@@ -8,7 +8,8 @@ pipeline {
     environment {
         // Define environment variables here
         BOT_NAME = 'awesome-bot'
-        // BOT_TOKEN = credentials('telegram-bot-token')
+        TELEGRAM_BOT_TOKEN = credentials('telegram-bot-token')
+        MISTRAL_API_KEY = credentials('mistral-api-key')
         PYTHON_VERSION = '3.12'
     }
 
@@ -105,7 +106,16 @@ pipeline {
                 script {
                     // Add your deployment commands here
                     echo "Deploying the project..."
-                    sh "make deploy env=${BRANCH_NAME}"
+                    withCredentials([
+                        string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN'),
+                        string(credentialsId: 'mistral-api-key', variable: 'MISTRAL_API_KEY')
+                    ]) {
+                        sh """
+                            make deploy env=${BRANCH_NAME} \
+                            TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN} \
+                            MISTRAL_API_KEY=${MISTRAL_API_KEY}
+                        """
+                    }
                 }
             }
         }
