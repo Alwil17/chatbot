@@ -7,7 +7,7 @@ from boto3.dynamodb.conditions import Key
 
 from src.config import env_vars
 
-## Simple edit
+# Simple edit
 
 
 class Utils:
@@ -88,7 +88,7 @@ class Utils:
         table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
 
         response = table.query(
-            IndexName="conversation_id-timestamp-index",  # Vous devrez créer cet index dans DynamoDB
+            IndexName="conversation_id-timestamp-index",  # l'index DynamoDB doit exister
             KeyConditionExpression=Key("conversation_id").eq(conversation_id),
             ScanIndexForward=True,  # Trier par timestamp croissant
         )
@@ -153,12 +153,12 @@ class Utils:
                     batch.delete_item(Key={"id": message["id"]})
 
             Utils.log_info(
-                f"Suppression réussie de {len(messages)} messages pour la conversation {conversation_id}"
+                f"Suppression réussie de {len(messages)} messages. ID: {conversation_id}"
             )
             return True
 
         except Exception as e:
             Utils.log_error(
-                f"Erreur lors de la suppression des messages de la conversation {conversation_id}: {str(e)}"
+                f"Erreur lors de la suppression des messages {conversation_id}: {str(e)}"
             )
             raise e
