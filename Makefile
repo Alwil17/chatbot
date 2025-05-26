@@ -2,10 +2,10 @@
 AWS_REGION ?= eu-west-3
 AWS_PROFILE ?= "esgis_profile"
 
-.PHONY: clean venv install build deploy-local deploy serve test test-endpoint format lint type-check quality
+.PHONY: clean .venv install build deploy-local deploy serve test test-endpoint format lint type-check quality
 
 clean:
-	rm -rf venv
+	rm -rf .venv
 	rm -rf __pycache__
 	rm -rf *.egg-info
 	rm -rf .pytest_cache
