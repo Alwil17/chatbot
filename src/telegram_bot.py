@@ -92,13 +92,14 @@ class TelegramBot:
             if total_messages > 0:
                 first_message = min(messages, key=lambda x: x["timestamp"])
                 first_date = datetime.fromisoformat(first_message["timestamp"])
+                average_messages_per_day = total_messages / max(1, (datetime.now() - first_date).days)
 
                 stats_message = (
                     "📊 Vos Statistiques\n\n"
                     f"📝 Nombre total de messages: {total_messages}\n"
                     f"📅 Premier message: {first_date.strftime('%d/%m/%Y')}\n"
                     f"💬 Conversation active depuis: {(datetime.now() - first_date).days} jours\n"
-                    f"📈 Moyenne de messages par jour: {total_messages / max(1, (datetime.now() - first_date).days):.1f}"
+                    f"📈 Moyenne de messages par jour: {average_messages_per_day:.1f}"
                 )
             else:
                 stats_message = (
