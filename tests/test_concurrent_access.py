@@ -120,7 +120,7 @@ async def test_conditional_writes(mock_dynamo):
             dynamo_client.put_item(
                 TableName=Utils.get_table_name(),
                 Item=message,
-                ConditionExpression="attribute_not_exists(version) OR version.N = :expected_version",
+                ConditionExpression="attribute_not_exists(version) OR version.N= :expected_version",
                 ExpressionAttributeValues={":expected_version": {"N": str(expected_version)}},
             )
             return True
