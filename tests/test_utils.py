@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime, timezone
 from uuid import uuid4
 from src.utils import Utils
