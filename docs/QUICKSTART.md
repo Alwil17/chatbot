@@ -28,7 +28,7 @@ Ce guide vous permettra de démarrer rapidement avec le chatbot. Pour une docume
 
 3. **Lancez le script d'initialisation**
    ```bash
-   python scripts/init.py
+   python tools/init.py
    ```
 
    Le script va automatiquement :
@@ -56,12 +56,12 @@ Si vous préférez configurer chaque élément manuellement :
 
 3. **Créez la table DynamoDB**
    ```bash
-   python scripts/setup_dynamodb.py
+   python tools/setup_dynamodb.py
    ```
 
 4. **Configurez le webhook Telegram**
    ```bash
-   python scripts/set_webhook.py --url https://votre-url/telegram/webhook
+   python tools/set_webhook.py --url https://votre-url/telegram/webhook
    ```
 
 ## Démarrage du Bot
