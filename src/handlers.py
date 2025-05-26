@@ -65,4 +65,4 @@ async def handle_telegram_message(
 
     except Exception as e:
         Utils.log_error(f"Erreur lors du traitement du message: {str(e)}")
-        raise e 
+        raise e
