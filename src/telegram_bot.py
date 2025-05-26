@@ -9,8 +9,6 @@ from telegram.ext import (
 )
 from .config import env_vars
 from .utils import Utils
-import json
-from uuid import uuid4
 from datetime import datetime
 
 
