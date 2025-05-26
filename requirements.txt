@@ -18,9 +18,13 @@ mistralai>=0.0.7
 
 # Outils de développement
 pytest>=7.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
 black>=22.3.0
 flake8>=4.0.0
 mypy>=0.910
+httpx>=0.24.0  # Pour TestClient de FastAPI
+moto>=4.2.0    # Pour mock AWS services
 
 # Pour les scripts d'initialisation
 importlib-metadata>=4.8.0  # Pour la vérification des dépendances
