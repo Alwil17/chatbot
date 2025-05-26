@@ -74,8 +74,8 @@ pipeline {
         stage('Security Scan') {
             steps {
                 withEnv(["SAFETY_API_KEY=${SAFETY_API_KEY}"]) {
-                    sh "safety scan"
-                    sh "bandit -r src/ -f json -o bandit-report.json"
+                    sh ".venv/bin/safety scan"
+                    sh ".venv/bin/bandit -r src/ -f json -o bandit-report.json"
                 }
             }
             post {
