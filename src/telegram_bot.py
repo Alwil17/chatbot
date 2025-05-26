@@ -202,6 +202,7 @@ class TelegramBot:
 
             # Utiliser directement le client Mistral
             from .main import client, model
+
             chat_response = client.chat.complete(
                 model=model,
                 messages=[
