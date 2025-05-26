@@ -22,3 +22,4 @@ safety==2.3.5
 
 # Development tools
 pre-commit==3.6.2 
+pydantic_settings
