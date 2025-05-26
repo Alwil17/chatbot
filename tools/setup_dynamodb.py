@@ -39,7 +39,8 @@ def setup_dynamodb():
             AttributeDefinitions=[
                 {'AttributeName': 'id', 'AttributeType': 'S'},
                 {'AttributeName': 'conversation_id', 'AttributeType': 'S'},
-                {'AttributeName': 'timestamp', 'AttributeType': 'S'}
+                {'AttributeName': 'timestamp', 'AttributeType': 'S'},
+                {'AttributeName': 'user_id', 'AttributeType': 'S'}
             ],
             KeySchema=[
                 {'AttributeName': 'id', 'KeyType': 'HASH'}
@@ -49,6 +50,18 @@ def setup_dynamodb():
                     'IndexName': 'conversation_id-timestamp-index',
                     'KeySchema': [
                         {'AttributeName': 'conversation_id', 'KeyType': 'HASH'},
+                        {'AttributeName': 'timestamp', 'KeyType': 'RANGE'}
+                    ],
+                    'Projection': {'ProjectionType': 'ALL'},
+                    'ProvisionedThroughput': {
+                        'ReadCapacityUnits': 5,
+                        'WriteCapacityUnits': 5
+                    }
+                },
+                {
+                    'IndexName': 'user_id-timestamp-index',
+                    'KeySchema': [
+                        {'AttributeName': 'user_id', 'KeyType': 'HASH'},
                         {'AttributeName': 'timestamp', 'KeyType': 'RANGE'}
                     ],
                     'Projection': {'ProjectionType': 'ALL'},
