@@ -12,6 +12,7 @@ clean:
 	rm -rf .mypy_cache
 	rm -rf .coverage
 	rm -rf htmlcov
+	rm -rf test-results
 
 venv: clean
 	python3 -m venv .venv
@@ -38,7 +39,8 @@ serve:
 
 test:
 	@echo "Running tests..."
-	.venv/bin/pytest
+	mkdir -p test-results
+	.venv/bin/pytest --junitxml=test-results/junit.xml --cov=src --cov-report=xml:test-results/coverage.xml --cov-report=html:test-results/htmlcov
 
 test-endpoint:
 	@echo "Running endpoint tests..."
