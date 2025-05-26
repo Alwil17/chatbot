@@ -2,7 +2,6 @@ import json
 import logging
 import os
 from typing import List, Any, Dict
-from boto3.session import Session
 from logging import Logger
 
 import boto3
@@ -52,39 +51,39 @@ class Utils:
         return logging.getLogger("uvicorn.error")
 
     @staticmethod
-    def get_dynamo_client():
+    def get_dynamo_client() -> boto3.client:
         """Get DynamoDB client with appropriate credentials"""
         # Check if running in Lambda
-        is_lambda = bool(os.getenv('AWS_LAMBDA_FUNCTION_NAME'))
+        is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
         Utils.log_info(f"Running in Lambda environment: {is_lambda}")
         Utils.log_info(f"AWS Region: {env_vars.AWS_REGION_NAME}")
         Utils.log_info(f"DynamoDB Table: {env_vars.DYNAMO_TABLE}")
-        
+
         if is_lambda:
             # In Lambda, use the role credentials
             Utils.log_info("Using Lambda IAM role credentials")
-            return boto3.client('dynamodb', region_name=env_vars.AWS_REGION_NAME)
+            return boto3.client("dynamodb", region_name=env_vars.AWS_REGION_NAME)
         else:
             # Local development - use explicit credentials
             Utils.log_info("Using local development credentials")
             return boto3.client(
-                'dynamodb',
+                "dynamodb",
                 region_name=env_vars.AWS_REGION_NAME,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
             )
 
     @staticmethod
-    def get_dynamo_resource():
+    def get_dynamo_resource() -> boto3.resource:
         """Get DynamoDB resource with appropriate credentials"""
         # Check if running in Lambda
-        if os.getenv('AWS_LAMBDA_FUNCTION_NAME'):
+        if os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
             # In Lambda, use the role credentials
-            return boto3.resource('dynamodb', region_name=env_vars.AWS_REGION_NAME)
+            return boto3.resource("dynamodb", region_name=env_vars.AWS_REGION_NAME)
         else:
             # Local development - use explicit credentials
             return boto3.resource(
-                'dynamodb',
+                "dynamodb",
                 region_name=env_vars.AWS_REGION_NAME,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
