@@ -55,20 +55,29 @@ class Utils:
         """Get DynamoDB client with appropriate credentials"""
         # Check if running in Lambda
         is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+        is_testing = bool(os.getenv("AWS_ACCESS_KEY_ID") == "testing")
+        
         Utils.log_info(f"Running in Lambda environment: {is_lambda}")
+        Utils.log_info(f"Running in test environment: {is_testing}")
         Utils.log_info(f"AWS Region: {env_vars.AWS_REGION}")
         Utils.log_info(f"DynamoDB Table: {env_vars.DYNAMO_TABLE}")
 
-        if is_lambda:
+        # Get region from environment or settings
+        region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
+        
+        if is_testing:
+            # In test environment, use mocked credentials
+            return boto3.client("dynamodb", region_name=region)
+        elif is_lambda:
             # In Lambda, use the role credentials
             Utils.log_info("Using Lambda IAM role credentials")
-            return boto3.client("dynamodb", region_name=env_vars.AWS_REGION)
+            return boto3.client("dynamodb", region_name=region)
         else:
             # Local development - use explicit credentials
             Utils.log_info("Using local development credentials")
             return boto3.client(
                 "dynamodb",
-                region_name=env_vars.AWS_REGION,
+                region_name=region,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
             )
@@ -76,15 +85,24 @@ class Utils:
     @staticmethod
     def get_dynamo_resource() -> boto3.resource:
         """Get DynamoDB resource with appropriate credentials"""
-        # Check if running in Lambda
-        if os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        # Check if running in Lambda or tests
+        is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
+        is_testing = bool(os.getenv("AWS_ACCESS_KEY_ID") == "testing")
+        
+        # Get region from environment or settings
+        region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
+
+        if is_testing:
+            # In test environment, use mocked credentials
+            return boto3.resource("dynamodb", region_name=region)
+        elif is_lambda:
             # In Lambda, use the role credentials
-            return boto3.resource("dynamodb", region_name=env_vars.AWS_REGION)
+            return boto3.resource("dynamodb", region_name=region)
         else:
             # Local development - use explicit credentials
             return boto3.resource(
                 "dynamodb",
-                region_name=env_vars.AWS_REGION,
+                region_name=region,
                 aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
             )
