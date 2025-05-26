@@ -40,7 +40,8 @@ function TypeCheck {
 
 function RunTests {
     Write-Host "Running tests..." -ForegroundColor Blue
-    .\.venv\Scripts\pytest
+    New-Item -ItemType Directory -Force -Path "test-results"
+    .\.venv\Scripts\pytest --junitxml=test-results/junit.xml --cov=src --cov-report=xml:test-results/coverage.xml --cov-report=html:test-results/htmlcov
 }
 
 function SecurityScan {
