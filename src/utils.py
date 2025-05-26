@@ -129,3 +129,38 @@ class Utils:
         
         return list(conversations.values())
 
+    @staticmethod
+    def delete_conversation_messages(conversation_id: str):
+        """Supprime tous les messages d'une conversation spécifique"""
+        try:
+            # Récupérer d'abord tous les messages de la conversation
+            messages = Utils.get_conversation_messages(conversation_id)
+            
+            if not messages:
+                Utils.log_info(f"Aucun message à supprimer pour la conversation {conversation_id}")
+                return True
+                
+            dynamo_resource = boto3.resource(
+                "dynamodb",
+                region_name=env_vars.AWS_REGION_NAME,
+                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY
+            )
+            table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
+            
+            # Supprimer chaque message
+            with table.batch_writer() as batch:
+                for message in messages:
+                    batch.delete_item(
+                        Key={
+                            'id': message['id']
+                        }
+                    )
+            
+            Utils.log_info(f"Suppression réussie de {len(messages)} messages pour la conversation {conversation_id}")
+            return True
+            
+        except Exception as e:
+            Utils.log_error(f"Erreur lors de la suppression des messages de la conversation {conversation_id}: {str(e)}")
+            raise e
+
