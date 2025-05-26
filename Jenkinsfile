@@ -10,7 +10,6 @@ pipeline {
         BOT_NAME = 'awesome-bot'
         // BOT_TOKEN = credentials('telegram-bot-token')
         PYTHON_VERSION = '3.12'
-        SAFETY_API_KEY = credentials('safety-api-key')
     }
 
     stages {
@@ -73,8 +72,8 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                withEnv(["SAFETY_API_KEY=${SAFETY_API_KEY}"]) {
-                    sh ".venv/bin/safety scan"
+                script {
+                    sh ".venv/bin/safety check"
                     sh ".venv/bin/bandit -r src/ -f json -o bandit-report.json"
                 }
             }
