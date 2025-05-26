@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from src.utils import Utils
 
@@ -9,7 +9,7 @@ def test_insert_and_get_conversation_messages(mock_dynamo):
     message = {
         "id": {"S": str(uuid4())},
         "conversation_id": {"S": conversation_id},
-        "timestamp": {"S": datetime.utcnow().isoformat()},
+        "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
         "question": {"S": "Test question"},
         "answer": {"S": "Test answer"},
         "source": {"S": "api"}
@@ -57,7 +57,7 @@ def test_get_user_conversations(mock_dynamo):
             "id": {"S": str(uuid4())},
             "conversation_id": {"S": conversation_id},
             "user_id": {"S": user_id},
-            "timestamp": {"S": datetime.utcnow().isoformat()},
+            "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
             "question": {"S": f"Test question {i}"},
             "answer": {"S": f"Test answer {i}"},
             "source": {"S": "api"}
@@ -77,15 +77,16 @@ def test_get_user_conversations(mock_dynamo):
 def test_logging(caplog):
     """Test les fonctions de logging"""
     test_message = "Test log message"
-    
-    # Test info logging
+
+    # Capture les logs du logger utilisé par Utils
+    caplog.set_level("INFO", logger="uvicorn.error")
     Utils.log_info(test_message)
     assert test_message in caplog.text
-    
-    # Test error logging
+
+    caplog.set_level("ERROR", logger="uvicorn.error")
     Utils.log_error(test_message)
     assert test_message in caplog.text
-    
-    # Test debug logging
+
+    caplog.set_level("DEBUG", logger="uvicorn.error")
     Utils.log_debug(test_message)
     assert test_message in caplog.text 
