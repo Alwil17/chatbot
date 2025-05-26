@@ -196,18 +196,45 @@ class TelegramBot:
         message_text = update.message.text
 
         try:
-            # Appel à l'API Mistral via les fonctions existantes
-            from .main import chat
-
             Utils.log_info(
                 f"Message reçu de Telegram - Chat ID: {chat_id}, Message: {message_text}"
             )
 
-            # Utiliser le chat_id de Telegram comme conversation_id
-            response = await chat(update, message_text, conversation_id=chat_id)
+            # Utiliser directement le client Mistral
+            from .main import client, model
+            chat_response = client.chat.complete(
+                model=model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": message_text,
+                    },
+                ],
+            )
+
+            if not chat_response.choices:
+                raise ValueError("No response received from Mistral AI")
+
+            # Sauvegarder dans DynamoDB
+            timestamp = datetime.now().isoformat()
+            response = {
+                "id": {
+                    "S": f"{chat_response.id}",
+                },
+                "conversation_id": {"S": chat_id},
+                "timestamp": {"S": timestamp},
+                "question": {
+                    "S": f"{message_text}",
+                },
+                "answer": {
+                    "S": f"{chat_response.choices[0].message.content}",
+                },
+                "source": {"S": "telegram"},
+            }
+            Utils.insert_data(response)
 
             # Envoyer la réponse à l'utilisateur
-            await update.message.reply_text(response["answer"]["S"])
+            await update.message.reply_text(chat_response.choices[0].message.content)
 
         except Exception as e:
             Utils.log_error(f"Erreur lors du traitement du message Telegram: {str(e)}")
