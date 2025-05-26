@@ -13,11 +13,11 @@ from datetime import datetime
 
 
 class TelegramBot:
-    def __init__(self):
+    def __init__(self) -> None:
         self.application = Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).build()
         self._setup_handlers()
 
-    def _setup_handlers(self):
+    def _setup_handlers(self) -> None:
         """Configure les gestionnaires de commandes du bot"""
         self.application.add_handler(CommandHandler("start", self._start_command))
         self.application.add_handler(CommandHandler("help", self._help_command))
@@ -29,7 +29,7 @@ class TelegramBot:
             MessageHandler(filters.TEXT & ~filters.COMMAND, self._handle_message)
         )
 
-    async def _start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /start"""
         welcome_message = (
             "👋 Bonjour! Je suis votre assistant conversationnel.\n\n"
@@ -43,7 +43,7 @@ class TelegramBot:
         )
         await update.message.reply_text(welcome_message)
 
-    async def _help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /help"""
         help_message = (
             "📚 Guide d'utilisation\n\n"
@@ -64,7 +64,7 @@ class TelegramBot:
         )
         await update.message.reply_text(help_message)
 
-    async def _settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /settings"""
         keyboard = [
             [
@@ -81,7 +81,7 @@ class TelegramBot:
             "⚙️ Paramètres\n\n" "Choisissez un paramètre à configurer:", reply_markup=reply_markup
         )
 
-    async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /stats"""
         chat_id = str(update.effective_chat.id)
         try:
@@ -118,7 +118,7 @@ class TelegramBot:
                 "Désolé, une erreur s'est produite lors de la récupération de vos statistiques."
             )
 
-    async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /clear"""
         keyboard = [
             [
@@ -133,7 +133,7 @@ class TelegramBot:
             reply_markup=reply_markup,
         )
 
-    async def _button_click(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _button_click(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les clics sur les boutons inline"""
         query = update.callback_query
         await query.answer()
@@ -166,7 +166,7 @@ class TelegramBot:
             else:
                 await query.edit_message_text("❌ Opération annulée.")
 
-    async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les messages texte reçus"""
         chat_id = str(update.effective_chat.id)
         message_text = update.message.text
@@ -191,13 +191,13 @@ class TelegramBot:
                 "Désolé, une erreur s'est produite lors du traitement de votre message."
             )
 
-    async def setup_webhook(self):
+    async def setup_webhook(self) -> None:
         """Configure le webhook pour le bot"""
         webhook_url = f"{env_vars.TELEGRAM_WEBHOOK_URL}{env_vars.TELEGRAM_WEBHOOK_PATH}"
         await self.application.bot.set_webhook(webhook_url)
         Utils.log_info(f"Webhook set to {webhook_url}")
 
-    async def handle_update(self, update_data: dict):
+    async def handle_update(self, update_data: dict) -> None:
         """Gère les mises à jour reçues via webhook"""
         async with self.application:
             await self.application.process_update(
