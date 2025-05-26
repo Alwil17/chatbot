@@ -9,7 +9,7 @@ Ce guide vous permettra de démarrer rapidement avec le chatbot. Pour une docume
 - Un bot Telegram (créé via @BotFather)
 - Une clé API Mistral AI
 
-## Installation en 5 Minutes
+## Installation Automatique (Recommandée)
 
 1. **Clonez le dépôt**
    ```bash
@@ -17,7 +17,7 @@ Ce guide vous permettra de démarrer rapidement avec le chatbot. Pour une docume
    cd chatbot
    ```
 
-2. **Créez l'environnement virtuel**
+2. **Créez et activez l'environnement virtuel**
    ```bash
    python -m venv .venv
    # Sur Windows :
@@ -26,53 +26,58 @@ Ce guide vous permettra de démarrer rapidement avec le chatbot. Pour une docume
    source .venv/bin/activate
    ```
 
-3. **Installez les dépendances**
+3. **Lancez le script d'initialisation**
+   ```bash
+   python scripts/init.py
+   ```
+
+   Le script va automatiquement :
+   - Vérifier la version de Python
+   - Installer les dépendances
+   - Configurer le fichier `.env`
+   - Valider vos credentials AWS et Telegram
+   - Créer la table DynamoDB
+   - Configurer le webhook Telegram (optionnel)
+
+## Installation Manuelle (Alternative)
+
+Si vous préférez configurer chaque élément manuellement :
+
+1. **Installez les dépendances**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configurez les variables d'environnement**
+2. **Configurez l'environnement**
    ```bash
-   # Copiez le fichier d'exemple
    cp .env.example .env
-   
    # Éditez .env avec vos informations
-   # Sur Windows :
-   notepad .env
-   # Sur Linux/Mac :
-   nano .env
    ```
 
-   Contenu minimal requis dans `.env` :
-   ```
-   AWS_ACCESS_KEY_ID=votre_access_key
-   AWS_SECRET_ACCESS_KEY=votre_secret_key
-   AWS_REGION=votre_region
-   TELEGRAM_BOT_TOKEN=votre_token_bot
-   MISTRAL_API_KEY=votre_cle_api
-   DYNAMODB_TABLE_NAME=nom_de_votre_table
-   ```
-
-5. **Créez la table DynamoDB**
+3. **Créez la table DynamoDB**
    ```bash
-   # Utilisez le script de configuration
    python scripts/setup_dynamodb.py
+   ```
+
+4. **Configurez le webhook Telegram**
+   ```bash
+   python scripts/set_webhook.py --url https://votre-url/telegram/webhook
    ```
 
 ## Démarrage du Bot
 
-1. **Lancez l'application**
+1. **En développement local**
    ```bash
+   # Lancez ngrok pour le tunnel HTTPS
+   ngrok http 8000
+
+   # Dans un autre terminal, démarrez l'application
    uvicorn src.main:app --reload
    ```
 
-2. **Configurez le webhook Telegram**
+2. **En production**
    ```bash
-   # En développement local avec ngrok
-   ngrok http 8000
-   
-   # Utilisez l'URL générée
-   python scripts/set_webhook.py --url https://votre-url-ngrok/telegram/webhook
+   uvicorn src.main:app --host 0.0.0.0 --port 8000
    ```
 
 ## Test Rapide
