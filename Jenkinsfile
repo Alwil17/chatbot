@@ -9,6 +9,7 @@ pipeline {
         // Define environment variables here
         BOT_NAME = 'awesome-bot'
         // BOT_TOKEN = credentials('telegram-bot-token')
+        PYTHON_VERSION = '3.12'
     }
 
     stages {
@@ -29,6 +30,30 @@ pipeline {
             }
         }
 
+        stage('Code Quality') {
+            parallel {
+                stage('Formatting') {
+                    steps {
+                        sh "make format"
+                    }
+                }
+                stage('Linting') {
+                    steps {
+                        sh "make lint"
+                    }
+                }
+                stage('Type Checking') {
+                    steps {
+                        sh "make type-check"
+                    }
+                }
+            }
+            post {
+                failure {
+                    error "Code quality checks failed"
+                }
+            }
+        }
 
         stage('Tests Unitaires') {
             steps {
@@ -36,6 +61,32 @@ pipeline {
                     // Add your test commands here
                     echo "Running tests..."
                     sh "make test"
+                }
+            }
+            post {
+                always {
+                    junit 'test-results/*.xml'
+                    coverage([
+                        [metric: 'INSTRUCTION', healthy: 80, unhealthy: 60],
+                        [metric: 'BRANCH', healthy: 80, unhealthy: 60]
+                    ])
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                sh "safety check"
+                sh "bandit -r src/ -f json -o bandit-report.json"
+            }
+            post {
+                always {
+                    recordIssues(
+                        tools: [
+                            pyLint(pattern: 'pylint-report.txt'),
+                            bandit(pattern: 'bandit-report.json')
+                        ]
+                    )
                 }
             }
         }
@@ -51,6 +102,13 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                anyOf {
+                    branch 'prod'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
             steps {
                 script {
                     // Add your deployment commands here
@@ -61,6 +119,13 @@ pipeline {
         }
 
         stage('Test endpoint'){
+            when {
+                anyOf {
+                    branch 'prod'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
             steps {
                 script {
                     // Add your endpoint testing commands here
@@ -74,8 +139,8 @@ pipeline {
     post {
         always {
             script {
-                // Add your post-build actions here
-                echo "Post-build actions..."
+                // Clean workspace
+                cleanWs()
             }
         }
         success {
@@ -95,5 +160,4 @@ pipeline {
             }
         }
     }
-
 }
