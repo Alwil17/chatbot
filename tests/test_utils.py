@@ -1,9 +1,11 @@
-import pytest
 from datetime import datetime, timezone
 from uuid import uuid4
 from src.utils import Utils
+from pytest import LogCaptureFixture
+from _pytest.fixtures import FixtureRequest
 
-def test_insert_and_get_conversation_messages(mock_dynamo):
+
+def test_insert_and_get_conversation_messages(mock_dynamo: FixtureRequest) -> None:
     """Test l'insertion et la récupération des messages"""
     conversation_id = str(uuid4())
     message = {
@@ -12,45 +14,50 @@ def test_insert_and_get_conversation_messages(mock_dynamo):
         "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
         "question": {"S": "Test question"},
         "answer": {"S": "Test answer"},
-        "source": {"S": "api"}
+        "source": {"S": "api"},
     }
-    
+
     # Test insertion
-    assert Utils.insert_data(message) == True
-    
+    assert Utils.insert_data(message)
+
     # Test récupération
     messages = Utils.get_conversation_messages(conversation_id)
     assert len(messages) == 1
     assert messages[0]["question"] == "Test question"
     assert messages[0]["answer"] == "Test answer"
 
-def test_delete_conversation_messages(mock_dynamo, sample_conversation):
+
+def test_delete_conversation_messages(
+    mock_dynamo: FixtureRequest, sample_conversation: tuple[str, list]
+) -> None:
     """Test la suppression des messages d'une conversation"""
     conversation_id, _ = sample_conversation
-    
+
     # Vérifier que les messages existent
     messages = Utils.get_conversation_messages(conversation_id)
     assert len(messages) == 2
-    
+
     # Supprimer les messages
-    assert Utils.delete_conversation_messages(conversation_id) == True
-    
+    assert Utils.delete_conversation_messages(conversation_id)
+
     # Vérifier que les messages ont été supprimés
     messages = Utils.get_conversation_messages(conversation_id)
     assert len(messages) == 0
 
-def test_delete_nonexistent_conversation(mock_dynamo):
+
+def test_delete_nonexistent_conversation(mock_dynamo: FixtureRequest) -> None:
     """Test la suppression d'une conversation inexistante"""
     conversation_id = str(uuid4())
-    assert Utils.delete_conversation_messages(conversation_id) == True
+    assert Utils.delete_conversation_messages(conversation_id)
     messages = Utils.get_conversation_messages(conversation_id)
     assert len(messages) == 0
 
-def test_get_user_conversations(mock_dynamo):
+
+def test_get_user_conversations(mock_dynamo: FixtureRequest) -> None:
     """Test la récupération des conversations d'un utilisateur"""
     user_id = str(uuid4())
     conversation_id = str(uuid4())
-    
+
     # Créer quelques messages
     messages = [
         {
@@ -60,21 +67,22 @@ def test_get_user_conversations(mock_dynamo):
             "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
             "question": {"S": f"Test question {i}"},
             "answer": {"S": f"Test answer {i}"},
-            "source": {"S": "api"}
+            "source": {"S": "api"},
         }
         for i in range(3)
     ]
-    
+
     for message in messages:
         Utils.insert_data(message)
-    
+
     # Récupérer les conversations
     conversations = Utils.get_user_conversations(user_id)
     assert len(conversations) == 1
     assert conversations[0]["conversation_id"] == conversation_id
     assert conversations[0]["messages_count"] == 3
 
-def test_logging(caplog):
+
+def test_logging(caplog: LogCaptureFixture) -> None:
     """Test les fonctions de logging"""
     test_message = "Test log message"
 
@@ -89,4 +97,4 @@ def test_logging(caplog):
 
     caplog.set_level("DEBUG", logger="uvicorn.error")
     Utils.log_debug(test_message)
-    assert test_message in caplog.text 
+    assert test_message in caplog.text
