@@ -1,10 +1,18 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    filters,
+    ContextTypes,
+    CallbackQueryHandler,
+)
 from .config import env_vars
 from .utils import Utils
 import json
 from uuid import uuid4
 from datetime import datetime
+
 
 class TelegramBot:
     def __init__(self):
@@ -19,7 +27,9 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("stats", self._stats_command))
         self.application.add_handler(CommandHandler("clear", self._clear_command))
         self.application.add_handler(CallbackQueryHandler(self._button_click))
-        self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self._handle_message))
+        self.application.add_handler(
+            MessageHandler(filters.TEXT & ~filters.COMMAND, self._handle_message)
+        )
 
     async def _start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Gère la commande /start"""
@@ -61,18 +71,16 @@ class TelegramBot:
         keyboard = [
             [
                 InlineKeyboardButton("🔔 Notifications", callback_data="settings_notifications"),
-                InlineKeyboardButton("🌍 Langue", callback_data="settings_language")
+                InlineKeyboardButton("🌍 Langue", callback_data="settings_language"),
             ],
             [
                 InlineKeyboardButton("📝 Format des réponses", callback_data="settings_format"),
-                InlineKeyboardButton("🎨 Thème", callback_data="settings_theme")
-            ]
+                InlineKeyboardButton("🎨 Thème", callback_data="settings_theme"),
+            ],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(
-            "⚙️ Paramètres\n\n"
-            "Choisissez un paramètre à configurer:",
-            reply_markup=reply_markup
+            "⚙️ Paramètres\n\n" "Choisissez un paramètre à configurer:", reply_markup=reply_markup
         )
 
     async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -81,12 +89,12 @@ class TelegramBot:
         try:
             # Récupérer les statistiques depuis DynamoDB
             messages = Utils.get_conversation_messages(chat_id)
-            
+
             total_messages = len(messages)
             if total_messages > 0:
-                first_message = min(messages, key=lambda x: x['timestamp'])
-                first_date = datetime.fromisoformat(first_message['timestamp'])
-                
+                first_message = min(messages, key=lambda x: x["timestamp"])
+                first_date = datetime.fromisoformat(first_message["timestamp"])
+
                 stats_message = (
                     "📊 Vos Statistiques\n\n"
                     f"📝 Nombre total de messages: {total_messages}\n"
@@ -100,9 +108,9 @@ class TelegramBot:
                     "Vous n'avez pas encore de messages.\n"
                     "Commencez à discuter pour voir vos statistiques!"
                 )
-            
+
             await update.message.reply_text(stats_message)
-            
+
         except Exception as e:
             Utils.log_error(f"Erreur lors de la récupération des statistiques: {str(e)}")
             await update.message.reply_text(
@@ -114,14 +122,14 @@ class TelegramBot:
         keyboard = [
             [
                 InlineKeyboardButton("✅ Oui, effacer", callback_data="clear_confirm"),
-                InlineKeyboardButton("❌ Non, annuler", callback_data="clear_cancel")
+                InlineKeyboardButton("❌ Non, annuler", callback_data="clear_cancel"),
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(
             "🗑️ Êtes-vous sûr de vouloir effacer l'historique de conversation?\n"
             "Cette action est irréversible.",
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
         )
 
     async def _button_click(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -135,10 +143,12 @@ class TelegramBot:
                 "notifications": "🔔 Les paramètres de notification seront bientôt disponibles!",
                 "language": "🌍 Le support multilingue sera ajouté prochainement!",
                 "format": "📝 Les options de format seront disponibles bientôt!",
-                "theme": "🎨 La personnalisation du thème arrive bientôt!"
+                "theme": "🎨 La personnalisation du thème arrive bientôt!",
             }
-            await query.edit_message_text(messages.get(setting, "⚙️ Cette option n'est pas encore disponible."))
-        
+            await query.edit_message_text(
+                messages.get(setting, "⚙️ Cette option n'est pas encore disponible.")
+            )
+
         elif query.data.startswith("clear_"):
             action = query.data.split("_")[1]
             chat_id = str(update.effective_chat.id)
@@ -149,7 +159,9 @@ class TelegramBot:
                     await query.edit_message_text("🗑️ Historique effacé avec succès!")
                 except Exception as e:
                     Utils.log_error(f"Erreur lors de la suppression de l'historique: {str(e)}")
-                    await query.edit_message_text("❌ Une erreur s'est produite lors de la suppression de l'historique.")
+                    await query.edit_message_text(
+                        "❌ Une erreur s'est produite lors de la suppression de l'historique."
+                    )
             else:
                 await query.edit_message_text("❌ Opération annulée.")
 
@@ -158,18 +170,21 @@ class TelegramBot:
         chat_id = str(update.effective_chat.id)
         user_id = update.effective_user.id
         message_text = update.message.text
-        
+
         try:
             # Appel à l'API Mistral via les fonctions existantes
             from .main import chat
-            Utils.log_info(f"Message reçu de Telegram - Chat ID: {chat_id}, Message: {message_text}")
-            
+
+            Utils.log_info(
+                f"Message reçu de Telegram - Chat ID: {chat_id}, Message: {message_text}"
+            )
+
             # Utiliser le chat_id de Telegram comme conversation_id
             response = await chat(message_text, conversation_id=chat_id)
-            
+
             # Envoyer la réponse à l'utilisateur
             await update.message.reply_text(response["answer"]["S"])
-            
+
         except Exception as e:
             Utils.log_error(f"Erreur lors du traitement du message Telegram: {str(e)}")
             await update.message.reply_text(
@@ -189,4 +204,5 @@ class TelegramBot:
                 Update.de_json(data=update_data, bot=self.application.bot)
             )
 
-telegram_bot = TelegramBot() 
+
+telegram_bot = TelegramBot()
