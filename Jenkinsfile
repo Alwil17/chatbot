@@ -96,7 +96,7 @@ pipeline {
         stage('Deploy') {
             when {
                 anyOf {
-                    branch 'prod'
+                    branch 'alwil17'
                     branch 'dev'
                     branch 'preprod'
                 }
@@ -113,7 +113,7 @@ pipeline {
         stage('Test endpoint'){
             when {
                 anyOf {
-                    branch 'prod'
+                    branch 'alwil17'
                     branch 'dev'
                     branch 'preprod'
                 }
