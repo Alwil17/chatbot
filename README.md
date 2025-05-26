@@ -1,129 +1,139 @@
-# Chatbot API avec Telegram et DynamoDB
+# Chatbot avec FastAPI, Telegram et DynamoDB
 
-Ce projet est une API de chatbot qui utilise Mistral AI pour générer des réponses, s'intègre avec Telegram, et stocke les conversations dans AWS DynamoDB.
+Un chatbot intelligent utilisant Mistral AI, accessible via une API REST et Telegram, avec stockage persistant dans AWS DynamoDB.
 
-## Prérequis
+## Fonctionnalités
 
-- Python 3.8+
-- Un compte AWS avec accès à DynamoDB
-- Un bot Telegram (ID: @grey_chat_bot)
-- Une clé API Mistral AI
+- API REST avec FastAPI
+- Intégration Telegram
+- Réponses intelligentes via Mistral AI
+- Stockage persistant avec DynamoDB
+- Historique des conversations
+- Sécurité et gestion des erreurs
 
-## Configuration
+## Démarrage Rapide
 
-1. Créez un fichier `.env` à la racine du projet avec les variables suivantes :
-
-```env
-ENV_NAME=development
-AWS_REGION_NAME=<votre-region-aws>
-DYNAMO_TABLE=<nom-de-votre-table-dynamodb>
-AWS_ACCESS_KEY_ID=<votre-access-key-id>
-AWS_SECRET_ACCESS_KEY=<votre-secret-access-key>
-MISTRAL_API_KEY=<votre-cle-api-mistral>
-TELEGRAM_BOT_TOKEN=<votre-token-bot-telegram>
-TELEGRAM_WEBHOOK_URL=<url-de-votre-api>
-```
-
-2. Créez une table DynamoDB avec la structure suivante :
-   - Clé primaire : `id` (String)
-   - Index secondaire global (GSI) :
-     - Nom : `conversation_id-timestamp-index`
-     - Clé de partition : `conversation_id`
-     - Clé de tri : `timestamp`
-
-3. Installez les dépendances :
-```bash
-pip install -r requirements.txt
-```
-
-## Démarrage
-
-1. Lancez l'application localement :
-```bash
-uvicorn src.main:app --reload
-```
-
-2. Pour le développement, vous pouvez utiliser ngrok pour exposer votre API localement :
-```bash
-ngrok http 8000
-```
-
-3. Mettez à jour `TELEGRAM_WEBHOOK_URL` avec l'URL ngrok générée
-
-## Utilisation
-
-### API Endpoints
-
-- `GET /` : Page d'accueil
-- `GET /chat?question=<votre-question>&conversation_id=<id-optionnel>` : Envoyer une question au chatbot
-- `GET /conversations/{conversation_id}` : Récupérer l'historique d'une conversation
-- `POST /telegram/webhook` : Endpoint pour les webhooks Telegram
-
-### Bot Telegram
-
-1. Recherchez `@grey_chat_bot` sur Telegram
-2. Démarrez une conversation avec le bot
-3. Utilisez la commande `/start` pour commencer
-4. Envoyez des messages normaux pour interagir avec le chatbot
-
-### Gestion des données
-
-Pour vider la table en développement (réinitialiser les données) :
-
-```bash
-# Supprimer la table
-aws dynamodb delete-table --table-name VOTRE_NOM_TABLE
-
-# Attendre quelques secondes que la suppression soit effective
-
-# Recréer la table avec la même structure
-aws dynamodb create-table \
-    --table-name VOTRE_NOM_TABLE \
-    --attribute-definitions \
-        AttributeName=id,AttributeType=S \
-        AttributeName=conversation_id,AttributeType=S \
-        AttributeName=timestamp,AttributeType=S \
-    --key-schema \
-        AttributeName=id,KeyType=HASH \
-    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-    --global-secondary-indexes \
-        "[
-            {
-                \"IndexName\": \"conversation_id-timestamp-index\",
-                \"KeySchema\": [
-                    {\"AttributeName\":\"conversation_id\",\"KeyType\":\"HASH\"},
-                    {\"AttributeName\":\"timestamp\",\"KeyType\":\"RANGE\"}
-                ],
-                \"Projection\": {
-                    \"ProjectionType\":\"ALL\"
-                },
-                \"ProvisionedThroughput\": {
-                    \"ReadCapacityUnits\": 5,
-                    \"WriteCapacityUnits\": 5
-                }
-            }
-        ]"
-```
-
-⚠️ Note : Évitez d'utiliser "Delete items" dans la console AWS car cela effectue un scan complet de la table.
+Consultez [QUICKSTART.md](docs/QUICKSTART.md) pour une installation rapide.
 
 ## Structure du Projet
 
 ```
-├── src/
+chatbot/
+├── src/                      # Code source principal
 │   ├── __init__.py
-│   ├── main.py           # Point d'entrée de l'application
-│   ├── config.py         # Configuration et variables d'environnement
-│   ├── utils.py          # Utilitaires et fonctions helper
-│   └── telegram_bot.py   # Gestion du bot Telegram
-├── tests/                # Tests unitaires
-├── requirements.txt      # Dépendances Python
-└── README.md            # Documentation
+│   ├── main.py              # Point d'entrée FastAPI
+│   ├── config.py            # Configuration et variables d'environnement
+│   ├── telegram_bot.py      # Gestionnaire du bot Telegram
+│   ├── models/              # Modèles de données
+│   │   ├── __init__.py
+│   │   ├── message.py       # Modèle de message
+│   │   └── conversation.py  # Modèle de conversation
+│   ├── services/            # Logique métier
+│   │   ├── __init__.py
+│   │   ├── chat.py         # Service de chat
+│   │   └── storage.py      # Service de stockage DynamoDB
+│   └── utils/              # Utilitaires
+│       ├── __init__.py
+│       └── helpers.py      # Fonctions d'aide
+│
+├── tools/                   # Outils et scripts
+│   ├── init.py             # Script d'initialisation
+│   ├── setup_dynamodb.py   # Configuration DynamoDB
+│   └── set_webhook.py      # Configuration webhook Telegram
+│
+├── tests/                  # Tests
+│   ├── __init__.py
+│   ├── conftest.py        # Configuration pytest
+│   ├── test_api.py        # Tests API
+│   └── test_telegram.py   # Tests Telegram
+│
+├── docs/                   # Documentation
+│   ├── QUICKSTART.md      # Guide de démarrage rapide
+│   ├── API.md             # Documentation API
+│   ├── ARCHITECTURE.md    # Architecture technique
+│   ├── DEPLOYMENT.md      # Guide de déploiement
+│   └── CONTRIBUTING.md    # Guide de contribution
+│
+├── .env.example           # Template des variables d'environnement
+├── requirements.txt       # Dépendances Python
+├── pytest.ini            # Configuration des tests
+└── README.md             # Ce fichier
 ```
 
-## Sécurité
+## Technologies Utilisées
 
-- Assurez-vous que vos clés API et tokens sont sécurisés
-- Utilisez HTTPS pour votre webhook
-- Configurez correctement les permissions AWS
-- Ne commitez jamais le fichier `.env` dans Git 
+- **Backend**: FastAPI, Python 3.8+
+- **Base de données**: AWS DynamoDB
+- **IA**: Mistral AI
+- **Bot**: API Telegram
+- **Tests**: pytest
+- **Qualité**: black, flake8, mypy
+
+## Architecture
+
+```mermaid
+graph LR
+    Client[Client HTTP] --> API[FastAPI]
+    Telegram[Telegram] --> API
+    API --> DynamoDB[AWS DynamoDB]
+    API --> MistralAI[Mistral AI]
+```
+
+Pour plus de détails, consultez [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Configuration
+
+1. Copiez `.env.example` vers `.env`
+2. Configurez vos variables d'environnement :
+   ```env
+   AWS_ACCESS_KEY_ID=votre_access_key
+   AWS_SECRET_ACCESS_KEY=votre_secret_key
+   AWS_REGION=votre_region
+   TELEGRAM_BOT_TOKEN=votre_token_bot
+   MISTRAL_API_KEY=votre_cle_api
+   DYNAMODB_TABLE_NAME=nom_de_votre_table
+   ```
+
+## Documentation
+
+- [Guide de Démarrage](docs/QUICKSTART.md)
+- [Documentation API](docs/API.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Déploiement](docs/DEPLOYMENT.md)
+- [Contribution](docs/CONTRIBUTING.md)
+
+## Tests
+
+```bash
+# Lancer tous les tests
+pytest
+
+# Avec couverture
+pytest --cov=src
+
+# Tests spécifiques
+pytest tests/test_api.py
+```
+
+## Contribution
+
+Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+## Bonnes Pratiques
+
+- Suivez les conventions [PEP8](https://www.python.org/dev/peps/pep-0008/)
+- Écrivez des tests pour les nouvelles fonctionnalités
+- Documentez votre code
+- Utilisez les types statiques
+- Évitez les scans DynamoDB
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
+
+## Remerciements
+
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [python-telegram-bot](https://python-telegram-bot.org/)
+- [Mistral AI](https://mistral.ai/)
+- [AWS DynamoDB](https://aws.amazon.com/dynamodb/) 
