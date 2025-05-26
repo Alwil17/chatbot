@@ -5,7 +5,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     ENV_NAME: str = "alwil17"
-    AWS_REGION: str = ""
+    AWS_REGION: str = "eu-west-3"  # Default to Paris region
     DYNAMO_TABLE: str = ""
     AWS_PROFILE: str = ""
     AWS_ACCESS_KEY_ID: str = ""
