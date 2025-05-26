@@ -6,7 +6,7 @@ Ce projet est une API de chatbot qui utilise Mistral AI pour générer des répo
 
 - Python 3.8+
 - Un compte AWS avec accès à DynamoDB
-- Un bot Telegram (créé via @BotFather)
+- Un bot Telegram (ID: @grey_chat_bot)
 - Une clé API Mistral AI
 
 ## Configuration
@@ -17,7 +17,8 @@ Ce projet est une API de chatbot qui utilise Mistral AI pour générer des répo
 ENV_NAME=development
 AWS_REGION_NAME=<votre-region-aws>
 DYNAMO_TABLE=<nom-de-votre-table-dynamodb>
-AWS_PROFILE=<votre-profil-aws>
+AWS_ACCESS_KEY_ID=<votre-access-key-id>
+AWS_SECRET_ACCESS_KEY=<votre-secret-access-key>
 MISTRAL_API_KEY=<votre-cle-api-mistral>
 TELEGRAM_BOT_TOKEN=<votre-token-bot-telegram>
 TELEGRAM_WEBHOOK_URL=<url-de-votre-api>
@@ -60,9 +61,51 @@ ngrok http 8000
 
 ### Bot Telegram
 
-1. Démarrez une conversation avec votre bot sur Telegram
-2. Utilisez la commande `/start` pour commencer
-3. Envoyez des messages normaux pour interagir avec le chatbot
+1. Recherchez `@grey_chat_bot` sur Telegram
+2. Démarrez une conversation avec le bot
+3. Utilisez la commande `/start` pour commencer
+4. Envoyez des messages normaux pour interagir avec le chatbot
+
+### Gestion des données
+
+Pour vider la table en développement (réinitialiser les données) :
+
+```bash
+# Supprimer la table
+aws dynamodb delete-table --table-name VOTRE_NOM_TABLE
+
+# Attendre quelques secondes que la suppression soit effective
+
+# Recréer la table avec la même structure
+aws dynamodb create-table \
+    --table-name VOTRE_NOM_TABLE \
+    --attribute-definitions \
+        AttributeName=id,AttributeType=S \
+        AttributeName=conversation_id,AttributeType=S \
+        AttributeName=timestamp,AttributeType=S \
+    --key-schema \
+        AttributeName=id,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+    --global-secondary-indexes \
+        "[
+            {
+                \"IndexName\": \"conversation_id-timestamp-index\",
+                \"KeySchema\": [
+                    {\"AttributeName\":\"conversation_id\",\"KeyType\":\"HASH\"},
+                    {\"AttributeName\":\"timestamp\",\"KeyType\":\"RANGE\"}
+                ],
+                \"Projection\": {
+                    \"ProjectionType\":\"ALL\"
+                },
+                \"ProvisionedThroughput\": {
+                    \"ReadCapacityUnits\": 5,
+                    \"WriteCapacityUnits\": 5
+                }
+            }
+        ]"
+```
+
+⚠️ Note : Évitez d'utiliser "Delete items" dans la console AWS car cela effectue un scan complet de la table.
 
 ## Structure du Projet
 
@@ -82,4 +125,5 @@ ngrok http 8000
 
 - Assurez-vous que vos clés API et tokens sont sécurisés
 - Utilisez HTTPS pour votre webhook
-- Configurez correctement les permissions AWS 
+- Configurez correctement les permissions AWS
+- Ne commitez jamais le fichier `.env` dans Git 
