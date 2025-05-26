@@ -43,6 +43,12 @@ function RunTests {
     .\.venv\Scripts\pytest
 }
 
+function SecurityScan {
+    Write-Host "Running security scans..." -ForegroundColor Blue
+    .\.venv\Scripts\safety scan
+    .\.venv\Scripts\bandit -r src\ -f json -o bandit-report.json
+}
+
 function Quality {
     Format
     Lint
@@ -59,12 +65,14 @@ switch ($Command.ToLower()) {
     "lint" { Lint }
     "type-check" { TypeCheck }
     "test" { RunTests }
+    "security" { SecurityScan }
     "quality" { Quality }
     "all" {
         Clean
         CreateVenv
         Install
         Quality
+        SecurityScan
     }
     default {
         Write-Host "Unknown command: $Command" -ForegroundColor Red
@@ -77,8 +85,9 @@ Available commands:
 - lint: Check code style with flake8
 - type-check: Check types with mypy
 - test: Run tests
+- security: Run security scans
 - quality: Run all quality checks
-- all: Clean, create venv, install deps, and run quality checks
+- all: Clean, create venv, install deps, run quality checks and security scans
 "@ -ForegroundColor Yellow
     }
 } 
