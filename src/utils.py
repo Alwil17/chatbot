@@ -56,7 +56,7 @@ class Utils:
         # Check if running in Lambda
         is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
         is_testing = bool(os.getenv("AWS_ACCESS_KEY_ID") == "testing")
-        
+
         Utils.log_info(f"Running in Lambda environment: {is_lambda}")
         Utils.log_info(f"Running in test environment: {is_testing}")
         Utils.log_info(f"AWS Region: {env_vars.AWS_REGION}")
@@ -64,7 +64,7 @@ class Utils:
 
         # Get region from environment or settings
         region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
-        
+
         if is_testing:
             # In test environment, use mocked credentials
             return boto3.client("dynamodb", region_name=region)
@@ -88,7 +88,7 @@ class Utils:
         # Check if running in Lambda or tests
         is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
         is_testing = bool(os.getenv("AWS_ACCESS_KEY_ID") == "testing")
-        
+
         # Get region from environment or settings
         region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
 
