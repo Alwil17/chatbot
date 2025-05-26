@@ -1,8 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
-import json
-from datetime import datetime
 from src.main import app
 from mistralai import Chat
 
