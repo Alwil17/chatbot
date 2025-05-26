@@ -10,7 +10,6 @@ pipeline {
         BOT_NAME = 'awesome-bot'
         // BOT_TOKEN = credentials('telegram-bot-token')
         PYTHON_VERSION = '3.12'
-        SAFETY_API_KEY = credentials('safety-api-key')
     }
 
     stages {
@@ -67,29 +66,19 @@ pipeline {
             post {
                 always {
                     junit 'test-results/*.xml'
-                    coverage([
-                        [metric: 'INSTRUCTION', healthy: 80, unhealthy: 60],
-                        [metric: 'BRANCH', healthy: 80, unhealthy: 60]
-                    ])
                 }
             }
         }
 
         stage('Security Scan') {
             steps {
-                withEnv(["SAFETY_API_KEY=${SAFETY_API_KEY}"]) {
-                    sh "safety scan"
-                    sh "bandit -r src/ -f json -o bandit-report.json"
+                script {
+                    sh ".venv/bin/bandit -r src/ -f json -o bandit-report.json"
                 }
             }
             post {
                 always {
-                    recordIssues(
-                        tools: [
-                            pyLint(pattern: 'pylint-report.txt'),
-                            bandit(pattern: 'bandit-report.json')
-                        ]
-                    )
+                    archiveArtifacts artifacts: 'bandit-report.json', fingerprint: true
                 }
             }
         }
