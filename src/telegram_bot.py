@@ -15,7 +15,11 @@ from datetime import datetime
 class TelegramBot:
     def __init__(self) -> None:
         self.application = Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).build()
+        self.application.add_error_handler(self._error_handler)
         self._setup_handlers()
+
+    async def _error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+        Utils.log_error(f"Unhandled exception: {context.error}")
 
     def _setup_handlers(self) -> None:
         """Configure les gestionnaires de commandes du bot"""
@@ -31,7 +35,7 @@ class TelegramBot:
 
     async def _start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /start"""
-        if not update.message:
+        if not update.message or not update.effective_chat:
             return
 
         welcome_message = (
@@ -48,7 +52,7 @@ class TelegramBot:
 
     async def _help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /help"""
-        if not update.message:
+        if not update.message or not update.effective_chat:
             return
 
         help_message = (
@@ -72,7 +76,7 @@ class TelegramBot:
 
     async def _settings_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /settings"""
-        if not update.message:
+        if not update.message or not update.effective_chat:
             return
 
         keyboard = [
@@ -93,6 +97,10 @@ class TelegramBot:
     async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /stats"""
         if not update.effective_chat or not update.message:
+            return
+
+        if not update.message and not update.callback_query:
+            Utils.log_info("Ignored update: not a message or callback query.")
             return
 
         chat_id = str(update.effective_chat.id)
@@ -132,7 +140,7 @@ class TelegramBot:
 
     async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /clear"""
-        if not update.message:
+        if not update.message or not update.effective_chat:
             return
 
         keyboard = [
@@ -190,6 +198,10 @@ class TelegramBot:
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère les messages texte reçus"""
         if not update.effective_chat or not update.message:
+            return
+
+        if not update.message and not update.callback_query:
+            Utils.log_info("Ignored update: not a message or callback query.")
             return
 
         chat_id = str(update.effective_chat.id)
