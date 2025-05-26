@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import List, Any, Dict
 from boto3.session import Session
 from logging import Logger
@@ -51,21 +52,49 @@ class Utils:
         return logging.getLogger("uvicorn.error")
 
     @staticmethod
-    def get_session() -> Session:
-        return boto3.Session(
-            region_name=env_vars.AWS_REGION_NAME, profile_name=env_vars.AWS_PROFILE
-        )
+    def get_dynamo_client():
+        """Get DynamoDB client with appropriate credentials"""
+        # Check if running in Lambda
+        is_lambda = bool(os.getenv('AWS_LAMBDA_FUNCTION_NAME'))
+        Utils.log_info(f"Running in Lambda environment: {is_lambda}")
+        Utils.log_info(f"AWS Region: {env_vars.AWS_REGION_NAME}")
+        Utils.log_info(f"DynamoDB Table: {env_vars.DYNAMO_TABLE}")
+        
+        if is_lambda:
+            # In Lambda, use the role credentials
+            Utils.log_info("Using Lambda IAM role credentials")
+            return boto3.client('dynamodb', region_name=env_vars.AWS_REGION_NAME)
+        else:
+            # Local development - use explicit credentials
+            Utils.log_info("Using local development credentials")
+            return boto3.client(
+                'dynamodb',
+                region_name=env_vars.AWS_REGION_NAME,
+                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
+            )
+
+    @staticmethod
+    def get_dynamo_resource():
+        """Get DynamoDB resource with appropriate credentials"""
+        # Check if running in Lambda
+        if os.getenv('AWS_LAMBDA_FUNCTION_NAME'):
+            # In Lambda, use the role credentials
+            return boto3.resource('dynamodb', region_name=env_vars.AWS_REGION_NAME)
+        else:
+            # Local development - use explicit credentials
+            return boto3.resource(
+                'dynamodb',
+                region_name=env_vars.AWS_REGION_NAME,
+                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
+            )
 
     @staticmethod
     def insert_data(item: Dict[str, Dict[str, str]]) -> bool:
         try:
             Utils.log_info(f"Tentative d'insertion dans DynamoDB: {json.dumps(item, indent=2)}")
-            dynamo_client = boto3.client(
-                "dynamodb",
-                region_name=env_vars.AWS_REGION_NAME,
-                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
-            )
+            dynamo_client = Utils.get_dynamo_client()
             dynamo_client.put_item(
                 TableName=env_vars.DYNAMO_TABLE,
                 Item=item,
@@ -79,12 +108,7 @@ class Utils:
     @staticmethod
     def get_conversation_messages(conversation_id: str) -> List[Dict[str, Any]]:
         """Récupère tous les messages d'une conversation spécifique"""
-        dynamo_resource = boto3.resource(
-            "dynamodb",
-            region_name=env_vars.AWS_REGION_NAME,
-            aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
-        )
+        dynamo_resource = Utils.get_dynamo_resource()
         table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
 
         response = table.query(
@@ -99,12 +123,7 @@ class Utils:
     @staticmethod
     def get_user_conversations(user_id: str) -> list:
         """Récupère toutes les conversations d'un utilisateur en utilisant l'index"""
-        dynamo_resource = boto3.resource(
-            "dynamodb",
-            region_name=env_vars.AWS_REGION_NAME,
-            aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
-        )
+        dynamo_resource = Utils.get_dynamo_resource()
         table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
 
         # Utilise une requête sur l'index avec le user_id
@@ -140,12 +159,7 @@ class Utils:
                 Utils.log_info(f"Aucun message à supprimer pour la conversation {conversation_id}")
                 return True
 
-            dynamo_resource = boto3.resource(
-                "dynamodb",
-                region_name=env_vars.AWS_REGION_NAME,
-                aws_access_key_id=env_vars.AWS_ACCESS_KEY_ID,
-                aws_secret_access_key=env_vars.AWS_SECRET_ACCESS_KEY,
-            )
+            dynamo_resource = Utils.get_dynamo_resource()
             table = dynamo_resource.Table(env_vars.DYNAMO_TABLE)
 
             # Supprimer chaque message
