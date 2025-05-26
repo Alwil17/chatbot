@@ -92,7 +92,9 @@ class TelegramBot:
             if total_messages > 0:
                 first_message = min(messages, key=lambda x: x["timestamp"])
                 first_date = datetime.fromisoformat(first_message["timestamp"])
-                average_messages_per_day = total_messages / max(1, (datetime.now() - first_date).days)
+                average_messages_per_day = total_messages / max(
+                    1, (datetime.now() - first_date).days
+                )
 
                 stats_message = (
                     "📊 Vos Statistiques\n\n"
@@ -167,7 +169,6 @@ class TelegramBot:
     async def _handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Gère les messages texte reçus"""
         chat_id = str(update.effective_chat.id)
-        user_id = update.effective_user.id
         message_text = update.message.text
 
         try:
