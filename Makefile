@@ -2,7 +2,7 @@
 AWS_REGION ?= eu-west-3
 AWS_PROFILE ?= "esgis_profile"
 
-.PHONY: clean .venv install build deploy-local deploy serve test test-endpoint format lint type-check quality
+.PHONY: clean .venv install build deploy-local deploy serve test test-endpoint format lint type-check quality security-scan
 
 clean:
 	rm -rf .venv
@@ -59,3 +59,8 @@ type-check:
 
 quality: format lint type-check
 	@echo "All quality checks passed!"
+
+security-scan:
+	@echo "Running security scans..."
+	.venv/bin/safety scan
+	.venv/bin/bandit -r src/ -f json -o bandit-report.json
