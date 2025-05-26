@@ -126,7 +126,9 @@ class Utils:
                 KeyConditionExpression="conversation_id = :cid",
                 ExpressionAttributeValues={":cid": {"S": conversation_id}},
             )
-            return response.get("Items", [])
+            # Conversion explicite des items DynamoDB en dictionnaires Python
+            items = response.get("Items", [])
+            return [dict(item) for item in items]
 
     @classmethod
     async def batch_write(cls, items: List[Dict[str, Dict[str, str]]]) -> None:
