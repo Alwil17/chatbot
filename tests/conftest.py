@@ -59,6 +59,7 @@ def mock_dynamo(aws_credentials: None) -> Table:
             {"AttributeName": "id", "AttributeType": "S"},
             {"AttributeName": "conversation_id", "AttributeType": "S"},
             {"AttributeName": "timestamp", "AttributeType": "S"},
+            {"AttributeName": "user_id", "AttributeType": "S"},
         ],
         GlobalSecondaryIndexes=[
             {
@@ -69,7 +70,16 @@ def mock_dynamo(aws_credentials: None) -> Table:
                 ],
                 "Projection": {"ProjectionType": "ALL"},
                 "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
-            }
+            },
+            {
+                "IndexName": "user_id-timestamp-index",
+                "KeySchema": [
+                    {"AttributeName": "user_id", "KeyType": "HASH"},
+                    {"AttributeName": "timestamp", "KeyType": "RANGE"},
+                ],
+                "Projection": {"ProjectionType": "ALL"},
+                "ProvisionedThroughput": {"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
+            },
         ],
         ProvisionedThroughput={"ReadCapacityUnits": 5, "WriteCapacityUnits": 5},
     )
@@ -81,10 +91,12 @@ def mock_dynamo(aws_credentials: None) -> Table:
 def sample_conversation(mock_dynamo: Table) -> tuple[str, list[dict[str, dict[str, str]]]]:
     """Fixture pour créer des données de test"""
     conversation_id = str(uuid4())
+    user_id = str(uuid4())  # Generate a user ID
     messages = [
         {
             "id": {"S": str(uuid4())},
             "conversation_id": {"S": conversation_id},
+            "user_id": {"S": user_id},  # Add user_id
             "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
             "question": {"S": "Test question 1"},
             "answer": {"S": "Test answer 1"},
@@ -93,6 +105,7 @@ def sample_conversation(mock_dynamo: Table) -> tuple[str, list[dict[str, dict[st
         {
             "id": {"S": str(uuid4())},
             "conversation_id": {"S": conversation_id},
+            "user_id": {"S": user_id},  # Add user_id
             "timestamp": {"S": datetime.now(timezone.utc).isoformat()},
             "question": {"S": "Test question 2"},
             "answer": {"S": "Test answer 2"},
