@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     TELEGRAM_WEBHOOK_URL: str = ""
     TELEGRAM_WEBHOOK_PATH: str = "/telegram/webhook"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="allow"  # Permet les champs supplémentaires
+    )
 
 
 settings = Settings()
