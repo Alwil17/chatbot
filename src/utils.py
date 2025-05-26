@@ -79,7 +79,7 @@ class Utils:
             raise e
 
     @staticmethod
-    def get_conversation_messages(conversation_id: str) -> List[Dict[str, Any]]:
+    def get_conversation_messages(conversation_id: str) -> list:
         """Récupère tous les messages d'une conversation spécifique"""
         dynamo_resource = boto3.resource(
             "dynamodb",
@@ -98,7 +98,7 @@ class Utils:
         return response.get("Items", [])
 
     @staticmethod
-    def get_user_conversations(user_id: str) -> List[Dict[str, Any]]:
+    def get_user_conversations(user_id: str) -> list:
         """Récupère toutes les conversations d'un utilisateur en utilisant l'index"""
         dynamo_resource = boto3.resource(
             "dynamodb",
