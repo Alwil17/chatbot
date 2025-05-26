@@ -1,6 +1,10 @@
 import json
 import logging
-from typing import List
+from typing import List, Any, Dict, Optional
+from boto3.resources.base import ServiceResource
+from boto3.session import Session
+from mypy_boto3_dynamodb.service_resource import Table
+from logging import Logger
 
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -15,28 +19,28 @@ class Utils:
     ALLOWED_EXTENSIONS = ["pdf", "docx", "doc", "png", "jpg", "jpeg"]
 
     @staticmethod
-    def log_info(message):
+    def log_info(message: str) -> None:
         """_summary_
         Log a simple info message
         """
         logging.getLogger("uvicorn.error").info(msg=f"==> {message}")
 
     @staticmethod
-    def log_debug(message):
+    def log_debug(message: str) -> None:
         """_summary_
         Log a debug message
         """
         logging.getLogger("uvicorn.error").debug(msg=f"==> {message}")
 
     @staticmethod
-    def log_error(message):
+    def log_error(message: str) -> None:
         """_summary_
         Log an error message
         """
         logging.getLogger("uvicorn.error").error(msg=f"==> {message}")
 
     @staticmethod
-    def log_list(elements: List[any]):
+    def log_list(elements: List[Any]) -> None:
         if elements:
             logging.getLogger("uvicorn.error").info(
                 msg=f"Displaying all the {len(elements)} elements of the list"
@@ -47,17 +51,17 @@ class Utils:
                 )
 
     @staticmethod
-    def get_logger():
+    def get_logger() -> Logger:
         return logging.getLogger("uvicorn.error")
 
     @staticmethod
-    def get_session():
+    def get_session() -> Session:
         return boto3.Session(
             region_name=env_vars.AWS_REGION_NAME, profile_name=env_vars.AWS_PROFILE
         )
 
     @staticmethod
-    def insert_data(item):
+    def insert_data(item: Dict[str, Dict[str, str]]) -> bool:
         try:
             Utils.log_info(f"Tentative d'insertion dans DynamoDB: {json.dumps(item, indent=2)}")
             dynamo_client = boto3.client(
@@ -77,7 +81,7 @@ class Utils:
             raise e
 
     @staticmethod
-    def get_conversation_messages(conversation_id: str):
+    def get_conversation_messages(conversation_id: str) -> List[Dict[str, Any]]:
         """Récupère tous les messages d'une conversation spécifique"""
         dynamo_resource = boto3.resource(
             "dynamodb",
@@ -96,7 +100,7 @@ class Utils:
         return response.get("Items", [])
 
     @staticmethod
-    def get_user_conversations(user_id: str):
+    def get_user_conversations(user_id: str) -> List[Dict[str, Any]]:
         """Récupère toutes les conversations d'un utilisateur en utilisant l'index"""
         dynamo_resource = boto3.resource(
             "dynamodb",
@@ -114,7 +118,7 @@ class Utils:
         )
 
         # Groupe les messages par conversation_id
-        conversations = {}
+        conversations: Dict[str, Dict[str, Any]] = {}
         for item in response.get("Items", []):
             conv_id = item.get("conversation_id")
             if conv_id not in conversations:
@@ -129,7 +133,7 @@ class Utils:
         return list(conversations.values())
 
     @staticmethod
-    def delete_conversation_messages(conversation_id: str):
+    def delete_conversation_messages(conversation_id: str) -> bool:
         """Supprime tous les messages d'une conversation spécifique"""
         try:
             # Récupérer d'abord tous les messages de la conversation
