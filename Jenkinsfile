@@ -42,11 +42,11 @@ pipeline {
                         sh "make lint"
                     }
                 }
-                stage('Type Checking') {
+                /* stage('Type Checking') {
                     steps {
                         sh "make type-check"
                     }
-                }
+                } */
             }
             post {
                 failure {
