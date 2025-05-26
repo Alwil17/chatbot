@@ -9,8 +9,6 @@ from boto3.dynamodb.conditions import Key
 
 from src.config import env_vars
 
-# Simple edit
-
 
 class Utils:
 
@@ -79,7 +77,7 @@ class Utils:
             raise e
 
     @staticmethod
-    def get_conversation_messages(conversation_id: str) -> list:
+    def get_conversation_messages(conversation_id: str) -> List[Dict[str, Any]]:
         """Récupère tous les messages d'une conversation spécifique"""
         dynamo_resource = boto3.resource(
             "dynamodb",
@@ -95,7 +93,8 @@ class Utils:
             ScanIndexForward=True,  # Trier par timestamp croissant
         )
 
-        return response.get("Items", [])
+        items: List[Dict[str, Any]] = response.get("Items", [])
+        return items
 
     @staticmethod
     def get_user_conversations(user_id: str) -> list:
