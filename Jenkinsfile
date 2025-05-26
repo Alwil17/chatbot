@@ -120,6 +120,37 @@ pipeline {
             }
         }
 
+        stage('Configure Webhook') {
+            when {
+                anyOf {
+                    branch 'alwil17'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
+            steps {
+                script {
+                    // Get the API URL from CloudFormation outputs
+                    def apiUrl = sh(
+                        script: """
+                            aws cloudformation describe-stacks --stack-name multi-stack-${BRANCH_NAME} \
+                            --region eu-west-3 \
+                            --query 'Stacks[0].Outputs[?OutputKey==\`ApiUrl\`].OutputValue' \
+                            --output text
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Configure the webhook
+                    withCredentials([string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN')]) {
+                        sh """
+                            python tools/set_webhook.py --url "${apiUrl}Prod/telegram/webhook"
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Test endpoint'){
             when {
                 anyOf {
