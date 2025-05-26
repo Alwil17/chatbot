@@ -117,7 +117,7 @@ pytest tests/test_api.py
 
 ## Contribution
 
-Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+Les contributions sont les bienvenues ! Consultez [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Bonnes Pratiques
 
