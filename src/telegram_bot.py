@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Message, Chat
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -7,7 +7,6 @@ from telegram.ext import (
     ContextTypes,
     CallbackQueryHandler,
 )
-from typing import Optional
 from .config import env_vars
 from .utils import Utils
 from datetime import datetime
