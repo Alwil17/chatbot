@@ -12,7 +12,7 @@ from src.config import env_vars
 from src.utils import Utils
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def aws_credentials() -> None:
     """Fixture pour les credentials AWS de test"""
     import os
@@ -22,6 +22,7 @@ def aws_credentials() -> None:
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
     os.environ["AWS_SESSION_TOKEN"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-3"
+    os.environ["AWS_REGION"] = "eu-west-3"
     os.environ.pop("AWS_PROFILE", None)
 
 
