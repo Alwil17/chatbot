@@ -27,7 +27,9 @@ def test_insert_and_get_conversation_messages(mock_dynamo: FixtureRequest) -> No
     assert messages[0]["answer"] == "Test answer"
 
 
-def test_delete_conversation_messages(mock_dynamo: FixtureRequest, sample_conversation: tuple[str, list]) -> None:
+def test_delete_conversation_messages(
+    mock_dynamo: FixtureRequest, sample_conversation: tuple[str, list]
+) -> None:
     """Test la suppression des messages d'une conversation"""
     conversation_id, _ = sample_conversation
 
