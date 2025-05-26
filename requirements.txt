@@ -28,5 +28,9 @@ moto>=4.2.0    # Pour mock AWS services
 mypy-boto3-dynamodb
 pydantic_settings
 
+# security
+safety
+bandit
+
 # Pour les scripts d'initialisation
 importlib-metadata>=4.8.0  # Pour la vérification des dépendances
