@@ -45,7 +45,7 @@ def mock_dynamo(aws_credentials: None) -> Table:
     dynamo = boto3.resource("dynamodb", region_name="eu-west-3")
 
     # Créer la table avec les mêmes attributs que la production
-    table = dynamo.create_table(
+    table: Table = dynamo.create_table(
         TableName=env_vars.DYNAMO_TABLE,
         KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
         AttributeDefinitions=[
