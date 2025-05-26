@@ -32,7 +32,8 @@ ExceptionHandler = Union[
 @asynccontextmanager
 async def app_lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
     Utils.log_info("Starting the application")
-    await telegram_bot.setup_webhook()
+    # Ne pas configurer le webhook au démarrage car l'URL n'est pas encore disponible
+    # await telegram_bot.setup_webhook()
     yield
 
 
