@@ -26,6 +26,7 @@ mypy>=0.910
 httpx>=0.24.0  # Pour TestClient de FastAPI
 moto>=4.2.0    # Pour mock AWS services
 mypy-boto3-dynamodb
+pydantic_settings
 
 # Pour les scripts d'initialisation
 importlib-metadata>=4.8.0  # Pour la vérification des dépendances
