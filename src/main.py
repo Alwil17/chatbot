@@ -1,11 +1,15 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from mangum import Mangum
 import json, boto3
 from mistralai import Mistral
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.requests import Request as StarletteRequest
 
 from .config import env_vars
 from .utils import Utils
@@ -14,6 +18,9 @@ from .telegram_bot import telegram_bot
 api_key = env_vars.MISTRAL_API_KEY
 model = "mistral-small-latest"
 client = Mistral(api_key=api_key)
+
+# Création du limiteur de taux
+limiter = Limiter(key_func=get_remote_address)
 
 @asynccontextmanager
 async def app_lifespan(application: FastAPI):
@@ -27,6 +34,8 @@ app = FastAPI(
     version="1.0.0",
     lifespan=app_lifespan,
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,10 +46,12 @@ app.add_middleware(
 )
 
 @app.get("/")
-async def root():
+@limiter.limit("5/minute")
+async def root(request: Request):
     return {"msg": "Hello World"}
 
 @app.post(env_vars.TELEGRAM_WEBHOOK_PATH)
+@limiter.limit("60/minute")
 async def telegram_webhook(request: Request):
     """Endpoint pour recevoir les mises à jour de Telegram"""
     update_data = await request.json()
@@ -48,7 +59,8 @@ async def telegram_webhook(request: Request):
     return {"status": "ok"}
 
 @app.get("/chat")
-async def chat(question: str, conversation_id: str = None):
+@limiter.limit("30/minute")
+async def chat(request: Request, question: str, conversation_id: str = None):
     Utils.log_info(f"Nouvelle question reçue: {question}")
     
     if not conversation_id:
@@ -67,7 +79,7 @@ async def chat(question: str, conversation_id: str = None):
         )
         Utils.log_info("Réponse reçue de Mistral AI")
         
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         response = {
             "id": {
                 "S": f"{chat_response.id}",
@@ -96,13 +108,15 @@ async def chat(question: str, conversation_id: str = None):
         raise e
 
 @app.get("/conversations/{conversation_id}")
-async def get_conversation(conversation_id: str):
+@limiter.limit("30/minute")
+async def get_conversation(request: Request, conversation_id: str):
     """Récupère tous les messages d'une conversation"""
     messages = Utils.get_conversation_messages(conversation_id)
     return {"messages": messages}
 
 @app.get("/chats/{user_id}")
-async def get_user_chats(user_id: str):
+@limiter.limit("30/minute")
+async def get_user_chats(request: Request, user_id: str):
     """Récupère toutes les conversations d'un utilisateur"""
     messages = Utils.get_user_conversations(user_id)
     return {"conversations": messages}
