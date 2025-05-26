@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from mangum import Mangum
 from mistralai import Mistral
+from mistralai import ChatMessage, ChatCompletionResponse
 from datetime import datetime, timezone
 from uuid import uuid4
+from typing import Dict, List, Optional, Any, AsyncGenerator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -22,7 +24,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 
 @asynccontextmanager
-async def app_lifespan(application: FastAPI):
+async def app_lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
     Utils.log_info("Starting the application")
     await telegram_bot.setup_webhook()
     yield
@@ -48,13 +50,13 @@ app.add_middleware(
 
 @app.get("/")
 @limiter.limit("5/minute")
-async def root(request: Request):
+async def root(request: Request) -> Dict[str, str]:
     return {"msg": "Hello World"}
 
 
 @app.post(env_vars.TELEGRAM_WEBHOOK_PATH)
 @limiter.limit("60/minute")
-async def telegram_webhook(request: Request):
+async def telegram_webhook(request: Request) -> Dict[str, str]:
     """Endpoint pour recevoir les mises à jour de Telegram"""
     update_data = await request.json()
     await telegram_bot.handle_update(update_data)
@@ -63,7 +65,9 @@ async def telegram_webhook(request: Request):
 
 @app.get("/chat")
 @limiter.limit("30/minute")
-async def chat(request: Request, question: str, conversation_id: str = None):
+async def chat(
+    request: Request, question: str, conversation_id: Optional[str] = None
+) -> Dict[str, Dict[str, str]]:
     Utils.log_info(f"Nouvelle question reçue: {question}")
 
     if not conversation_id:
@@ -71,7 +75,7 @@ async def chat(request: Request, question: str, conversation_id: str = None):
         Utils.log_info(f"Nouvelle conversation créée avec ID: {conversation_id}")
 
     try:
-        chat_response = client.chat.complete(
+        chat_response: ChatCompletionResponse = client.chat.complete(
             model=model,
             messages=[
                 {
@@ -81,6 +85,9 @@ async def chat(request: Request, question: str, conversation_id: str = None):
             ],
         )
         Utils.log_info("Réponse reçue de Mistral AI")
+
+        if not chat_response.choices:
+            raise ValueError("No response received from Mistral AI")
 
         timestamp = datetime.now(timezone.utc).isoformat()
         response = {
@@ -107,7 +114,9 @@ async def chat(request: Request, question: str, conversation_id: str = None):
 
 @app.get("/conversations/{conversation_id}")
 @limiter.limit("30/minute")
-async def get_conversation(request: Request, conversation_id: str):
+async def get_conversation(
+    request: Request, conversation_id: str
+) -> Dict[str, List[Dict[str, Any]]]:
     """Récupère tous les messages d'une conversation"""
     messages = Utils.get_conversation_messages(conversation_id)
     return {"messages": messages}
@@ -115,7 +124,7 @@ async def get_conversation(request: Request, conversation_id: str):
 
 @app.get("/chats/{user_id}")
 @limiter.limit("30/minute")
-async def get_user_chats(request: Request, user_id: str):
+async def get_user_chats(request: Request, user_id: str) -> Dict[str, List[Dict[str, Any]]]:
     """Récupère toutes les conversations d'un utilisateur"""
     messages = Utils.get_user_conversations(user_id)
     return {"conversations": messages}
