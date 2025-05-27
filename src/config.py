@@ -4,20 +4,27 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    ENV_NAME: str = "local"
-    AWS_REGION_NAME: str = ""
+    ENV_NAME: str = "alwil17"
+    AWS_REGION: str = "eu-west-3"  # Default to Paris region
     DYNAMO_TABLE: str = ""
     AWS_PROFILE: str = ""
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
     MISTRAL_API_KEY: str = ""
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_WEBHOOK_URL: str = ""
+    TELEGRAM_WEBHOOK_PATH: str = "/telegram/webhook"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(
+        env_file=".env", extra="allow"  # Permet les champs supplémentaires
+    )
 
 
 settings = Settings()
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> Settings:
     return settings
 
 
