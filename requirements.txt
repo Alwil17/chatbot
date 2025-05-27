@@ -1,7 +1,36 @@
-pytest
-fastapi[standard]
-pydantic_settings
+# API et Framework
+fastapi>=0.109.0
+uvicorn>=0.27.0
+python-dotenv>=0.19.0
+mangum>=0.17.0
+slowapi>=0.1.9
+
+# AWS
 boto3
-mangum
-httpx
-mistralai
+botocore
+
+# Telegram
+python-telegram-bot>=13.7
+requests>=2.26.0
+
+# AI
+mistralai>=0.0.7
+
+# Outils de développement
+pytest>=7.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+black>=22.3.0
+flake8>=4.0.0
+mypy>=0.910
+httpx>=0.24.0  # Pour TestClient de FastAPI
+moto>=4.2.0    # Pour mock AWS services
+mypy-boto3-dynamodb
+pydantic_settings
+
+# security
+safety
+bandit
+
+# Pour les scripts d'initialisation
+importlib-metadata>=4.8.0  # Pour la vérification des dépendances

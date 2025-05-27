@@ -8,7 +8,9 @@ pipeline {
     environment {
         // Define environment variables here
         BOT_NAME = 'awesome-bot'
-        // BOT_TOKEN = credentials('telegram-bot-token')
+        TELEGRAM_BOT_TOKEN = credentials('telegram-bot-token')
+        MISTRAL_API_KEY = credentials('mistral-api-key')
+        PYTHON_VERSION = '3.12'
     }
 
     stages {
@@ -29,6 +31,30 @@ pipeline {
             }
         }
 
+        stage('Code Quality') {
+            parallel {
+                stage('Formatting') {
+                    steps {
+                        sh "make format"
+                    }
+                }
+                stage('Linting') {
+                    steps {
+                        sh "make lint"
+                    }
+                }
+                /* stage('Type Checking') {
+                    steps {
+                        sh "make type-check"
+                    }
+                } */
+            }
+            post {
+                failure {
+                    error "Code quality checks failed"
+                }
+            }
+        }
 
         stage('Tests Unitaires') {
             steps {
@@ -36,6 +62,24 @@ pipeline {
                     // Add your test commands here
                     echo "Running tests..."
                     sh "make test"
+                }
+            }
+            post {
+                always {
+                    junit 'test-results/*.xml'
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                script {
+                    sh ".venv/bin/bandit -r src/ -f json -o bandit-report.json"
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'bandit-report.json', fingerprint: true
                 }
             }
         }
@@ -51,16 +95,74 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                anyOf {
+                    branch 'alwil17'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
             steps {
                 script {
                     // Add your deployment commands here
                     echo "Deploying the project..."
-                    sh "make deploy env=${BRANCH_NAME}"
+                    withCredentials([
+                        string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN'),
+                        string(credentialsId: 'mistral-api-key', variable: 'MISTRAL_API_KEY')
+                    ]) {
+                        sh """
+                            make deploy env=${BRANCH_NAME} \
+                            TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN} \
+                            MISTRAL_API_KEY=${MISTRAL_API_KEY}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Configure Webhook') {
+            when {
+                anyOf {
+                    branch 'alwil17'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
+            steps {
+                script {
+                    // Get the API URL from CloudFormation outputs
+                    def apiUrl = sh(
+                        script: """
+                            aws cloudformation describe-stacks \
+                            --stack-name multi-stack-${BRANCH_NAME} \
+                            --region eu-west-3 \
+                            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+                            --output text
+                        """,
+                        returnStdout: true
+                    ).trim()
+
+                    // Configure the webhook
+                    withCredentials([string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN')]) {
+                        sh """
+                            # Activer l'environnement virtuel et exécuter le script
+                            . .venv/bin/activate
+                            python tools/set_webhook.py --url "${apiUrl}/telegram/webhook"
+                            deactivate
+                        """
+                    }
                 }
             }
         }
 
         stage('Test endpoint'){
+            when {
+                anyOf {
+                    branch 'alwil17'
+                    branch 'dev'
+                    branch 'preprod'
+                }
+            }
             steps {
                 script {
                     // Add your endpoint testing commands here
@@ -74,8 +176,8 @@ pipeline {
     post {
         always {
             script {
-                // Add your post-build actions here
-                echo "Post-build actions..."
+                // Clean workspace
+                cleanWs()
             }
         }
         success {
@@ -95,5 +197,4 @@ pipeline {
             }
         }
     }
-
 }
