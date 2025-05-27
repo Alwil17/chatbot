@@ -24,6 +24,7 @@ chatbot/
 │   ├── main.py              # Point d'entrée FastAPI
 │   ├── config.py            # Configuration et variables d'environnement
 │   ├── telegram_bot.py      # Gestionnaire du bot Telegram
+│   ├── utils.py             # Utilitaires
 │   ├── models/              # Modèles de données
 │   │   ├── __init__.py
 │   │   ├── message.py       # Modèle de message
@@ -32,9 +33,6 @@ chatbot/
 │   │   ├── __init__.py
 │   │   ├── chat.py         # Service de chat
 │   │   └── storage.py      # Service de stockage DynamoDB
-│   └── utils/              # Utilitaires
-│       ├── __init__.py
-│       └── helpers.py      # Fonctions d'aide
 │
 ├── tools/                   # Outils et scripts
 │   ├── init.py             # Script d'initialisation
@@ -45,15 +43,15 @@ chatbot/
 │   ├── __init__.py
 │   ├── conftest.py        # Configuration pytest
 │   ├── test_api.py        # Tests API
-│   └── test_telegram.py   # Tests Telegram
+│   └── test_utils.py      # Tests des fonctions utilitaires
 │
 ├── docs/                   # Documentation
 │   ├── QUICKSTART.md      # Guide de démarrage rapide
 │   ├── API.md             # Documentation API
 │   ├── ARCHITECTURE.md    # Architecture technique
 │   ├── DEPLOYMENT.md      # Guide de déploiement
-│   └── CONTRIBUTING.md    # Guide de contribution
 │
+├── CONTRIBUTING.md    # Guide de contribution
 ├── .env.example           # Template des variables d'environnement
 ├── requirements.txt       # Dépendances Python
 ├── pytest.ini            # Configuration des tests
@@ -100,7 +98,7 @@ Pour plus de détails, consultez [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - [Documentation API](docs/API.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Déploiement](docs/DEPLOYMENT.md)
-- [Contribution](docs/CONTRIBUTING.md)
+- [Contribution](CONTRIBUTING.md)
 
 ## Tests
 
