@@ -1,6 +1,5 @@
 # by default, we settle down in this region
 AWS_REGION ?= eu-west-3
-AWS_PROFILE ?= "esgis_profile"
 
 # Default values for deployment
 TELEGRAM_BOT_TOKEN ?= ""
