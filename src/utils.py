@@ -67,18 +67,17 @@ class Utils:
         Utils.log_info(f"AWS_SESSION_TOKEN from env: {os.getenv('AWS_SESSION_TOKEN')}")
 
         # Get region from environment or settings
-        region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
+        # region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
 
         if is_lambda:
             # In Lambda, use the role credentials
             Utils.log_info("Using Lambda IAM role credentials")
-            return boto3.client("dynamodb", region_name=region)
+            return boto3.client("dynamodb")
         else:
             # Local development or test environment
             Utils.log_info("Using local/test credentials")
             return boto3.client(
                 "dynamodb",
-                region_name=region,
                 aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID") or env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
                 or env_vars.AWS_SECRET_ACCESS_KEY,
@@ -91,16 +90,15 @@ class Utils:
         is_lambda = bool(os.getenv("AWS_LAMBDA_FUNCTION_NAME"))
 
         # Get region from environment or settings
-        region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
+        # region = os.getenv("AWS_REGION") or env_vars.AWS_REGION
 
         if is_lambda:
             # In Lambda, use the role credentials
-            return boto3.resource("dynamodb", region_name=region)
+            return boto3.resource("dynamodb")
         else:
             # Local development or test environment
             return boto3.resource(
                 "dynamodb",
-                region_name=region,
                 aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID") or env_vars.AWS_ACCESS_KEY_ID,
                 aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
                 or env_vars.AWS_SECRET_ACCESS_KEY,
