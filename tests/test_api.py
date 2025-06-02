@@ -84,18 +84,18 @@ async def test_telegram_webhook(client: TestClient, mock_dynamo: Table) -> None:
         },
     }
 
-    with patch('aiohttp.ClientSession.post') as mock_post:
+    with patch("aiohttp.ClientSession.post") as mock_post:
         # Mock the response from Telegram API
         mock_response = AsyncMock()
         mock_response.json.return_value = {"ok": True, "result": {"message_id": 1}}
         mock_post.return_value.__aenter__.return_value = mock_response
-        
+
         response = client.post(
             "/telegram/webhook",
             json=update_data,
             headers={"Content-Type": "application/json"},
         )
-        
+
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
         mock_post.assert_called_once()  # Verify we tried to send a message
