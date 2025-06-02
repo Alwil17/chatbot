@@ -40,7 +40,7 @@ class TelegramBot:
         TelegramBot._initialized = True
 
         self.token = env_vars.TELEGRAM_BOT_TOKEN
-        self.session = aiohttp.ClientSession()
+        self._session = None  # Will be initialized when needed
 
         # Initialize the bot with minimal configuration
         self.application = Application.builder().token(self.token).concurrent_updates(True).build()
@@ -48,6 +48,13 @@ class TelegramBot:
 
         # Initialize the bot instance for direct API calls
         self.bot = self.application.bot
+        
+    @property
+    async def session(self):
+        """Lazy initialization of aiohttp session"""
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
 
     async def _error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
         Utils.log_error(f"Unhandled exception: {context.error}")
@@ -302,8 +309,9 @@ class TelegramBot:
         if reply_markup:
             payload["reply_markup"] = json.dumps(reply_markup)
 
+        session = await self.session
         try:
-            async with self.session.post(url, json=payload) as response:
+            async with session.post(url, json=payload) as response:
                 result = await response.json()
                 if not result.get("ok"):
                     logger.error(f"Failed to send message: {result}")
@@ -312,6 +320,11 @@ class TelegramBot:
         except Exception as e:
             logger.error(f"Error sending message: {str(e)}")
             return False
+        
+    async def close(self):
+        """Close the aiohttp session when done"""
+        if self._session and not self._session.closed:
+            await self._session.close()
 
     async def handle_update(self, update_data: dict) -> dict:
         """
