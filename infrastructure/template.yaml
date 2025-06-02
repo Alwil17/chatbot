@@ -43,6 +43,26 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub "chatbot-apigateway-${EnvironmentName}"
+      FailOnWarnings: true
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - "GET"
+          - "POST"
+          - "OPTIONS"
+        AllowHeaders:
+          - "Content-Type"
+          - "X-Amz-Date"
+          - "Authorization"
+          - "X-Api-Key"
+          - "X-Amz-Security-Token"
+          - "X-Amz-User-Agent"
+
   Function:
     Type: AWS::Serverless::Function
     Properties:
@@ -77,21 +97,21 @@ Resources:
                 - !GetAtt DynamoDBTable.Arn
                 - !Sub "${DynamoDBTable.Arn}/index/*"
       Events:
-        Api:
+        ApiEvent:
           Type: HttpApi
           Properties:
             ApiId: !Ref Api
-
-  Api:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      Name: !Sub "chatbot-apigateway-${EnvironmentName}"
+            Path: /{proxy+}
+            Method: ANY
 
 
 Outputs:
-  DynamoDBTableName:
-    Value: !Ref DynamoDBTable
   ApiUrl:
-    Description: URL of your API
-    Value:
-      Fn::Sub: 'https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/'
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/"
+  WebhookUrl:
+    Description: "Telegram Webhook URL"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/telegram/webhook"
+  DynamoDBTableName:
+    Description: "DynamoDB Table Name"
+    Value: !Ref DynamoDBTable
