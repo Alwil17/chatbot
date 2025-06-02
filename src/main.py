@@ -65,9 +65,26 @@ async def root(request: Request) -> Dict[str, str]:
 @limiter.limit("60/minute")
 async def telegram_webhook(request: Request) -> Dict[str, str]:
     """Endpoint pour recevoir les mises à jour de Telegram"""
-    update_data = await request.json()
-    await telegram_bot.handle_update(update_data)
-    return {"status": "ok"}
+    try:
+        update_data = await request.json()
+        if not update_data:
+            raise ValueError("Empty update data received")
+
+        # Process the update and get the response
+        result = await telegram_bot.handle_update(update_data)
+
+        # Return the appropriate response based on the result
+        if result.get("statusCode") == 200:
+            return {"status": "ok"}
+        else:
+            error_msg = result.get("body", "Unknown error")
+            Utils.log_error(f"Error in telegram_webhook: {error_msg}")
+            return {"status": "error", "message": error_msg}
+
+    except Exception as e:
+        error_msg = str(e)
+        Utils.log_error(f"Error in telegram_webhook: {error_msg}")
+        return {"status": "error", "message": error_msg}
 
 
 @app.get("/chat")
