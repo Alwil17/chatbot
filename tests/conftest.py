@@ -54,15 +54,15 @@ def client() -> TestClient:
 def ensure_cleanup():
     """Ensure cleanup after tests"""
     from src.telegram_bot import telegram_bot
-    
+
     # Setup code before test
     yield  # Test runs here
-    
+
     # Teardown code after test
     import asyncio
-    
+
     # Close the aiohttp session if it exists
-    if hasattr(telegram_bot, '_session') and telegram_bot._session is not None:
+    if hasattr(telegram_bot, "_session") and telegram_bot._session is not None:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(telegram_bot.close())
 
