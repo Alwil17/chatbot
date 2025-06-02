@@ -48,7 +48,7 @@ class TelegramBot:
 
         # Initialize the bot instance for direct API calls
         self.bot = self.application.bot
-        
+
     @property
     async def session(self):
         """Lazy initialization of aiohttp session"""
@@ -320,7 +320,7 @@ class TelegramBot:
         except Exception as e:
             logger.error(f"Error sending message: {str(e)}")
             return False
-        
+
     async def close(self):
         """Close the aiohttp session when done"""
         if self._session and not self._session.closed:
