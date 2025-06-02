@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 from fastapi.testclient import TestClient
 import boto3
 from moto import mock_aws
@@ -10,6 +11,10 @@ from mypy_boto3_dynamodb.service_resource import Table
 from src.main import app
 from src.config import env_vars
 from src.utils import Utils
+
+# Create a new event loop for the test session
+event_loop = asyncio.new_event_loop()
+asyncio.set_event_loop(event_loop)
 
 
 @pytest.fixture(autouse=True)
@@ -43,6 +48,23 @@ def test_app() -> FastAPI:
 def client() -> TestClient:
     """Fixture pour le client de test FastAPI"""
     return TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def ensure_cleanup():
+    """Ensure cleanup after tests"""
+    from src.telegram_bot import telegram_bot
+    
+    # Setup code before test
+    yield  # Test runs here
+    
+    # Teardown code after test
+    import asyncio
+    
+    # Close the aiohttp session if it exists
+    if hasattr(telegram_bot, '_session') and telegram_bot._session is not None:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(telegram_bot.close())
 
 
 @pytest.fixture
