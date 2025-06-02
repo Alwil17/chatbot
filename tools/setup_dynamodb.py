@@ -14,9 +14,9 @@ def setup_dynamodb():
     Configure les index secondaires nécessaires.
     """
     # Récupérer les credentials depuis les variables d'environnement
-    table_name = os.getenv('DYNAMODB_TABLE_NAME')
+    table_name = os.getenv('DYNAMO_TABLE')
     if not table_name:
-        print("Erreur: DYNAMODB_TABLE_NAME non défini dans .env")
+        print("Erreur: DYNAMO_TABLE non défini dans .env")
         sys.exit(1)
 
     try:
