@@ -45,7 +45,6 @@ async def test_handle_update_invalid_update():
         patch("src.telegram_bot.logger") as mock_logger,
         patch("src.telegram_bot.Update.de_json") as mock_de_json,
     ):
-
         # Make de_json return None to simulate invalid update
         mock_de_json.return_value = None
 
@@ -54,6 +53,6 @@ async def test_handle_update_invalid_update():
 
         # Verify the result
         assert result["statusCode"] == 400
-        assert "Failed to process update" in result["body"]
+        assert result["body"] == "Invalid update"
         # Verify error was logged
-        mock_logger.error.assert_called()
+        mock_logger.error.assert_called_with("Invalid update or no chat information")
