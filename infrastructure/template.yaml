@@ -10,7 +10,6 @@ Parameters:
     Type: String
     AllowedValues:
       - alwil17
-      - dev
       - preprod
       - prod
   TelegramBotToken:
