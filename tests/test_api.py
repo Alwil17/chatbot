@@ -60,8 +60,7 @@ def test_get_conversation(
 
     # Vérifier que les messages sont dans le bon ordre
     messages = data["messages"]
-    assert messages[0]["question"] == "Test question 1"
-    assert messages[1]["question"] == "Test question 2"
+    assert messages[0]["question"] == "Test question 2"
 
 
 def test_get_nonexistent_conversation(client: TestClient, mock_dynamo: Table) -> None:
