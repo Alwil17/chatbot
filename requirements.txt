@@ -3,13 +3,13 @@ fastapi>=0.109.0
 uvicorn>=0.27.0
 mangum>=0.17.0
 slowapi>=0.1.9
-aiohttp>=3.8.0
 
 # AWS
 boto3
 
 # Telegram
 python-telegram-bot>=13.7
+requests>=2.26.0
 
 # AI
 mistralai>=0.0.7
@@ -21,6 +21,7 @@ pytest-cov>=4.1.0
 black>=22.3.0
 flake8>=4.0.0
 mypy>=0.910
+httpx>=0.24.0  # Pour TestClient de FastAPI
 moto>=4.2.0    # Pour mock AWS services
 mypy-boto3-dynamodb
 pydantic_settings
