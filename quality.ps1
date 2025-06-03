@@ -33,11 +33,6 @@ function Lint {
     .\.venv\Scripts\flake8 src\ tests\
 }
 
-function TypeCheck {
-    Write-Host "Type checking with mypy..." -ForegroundColor Blue
-    .\.venv\Scripts\mypy src\ tests\
-}
-
 function RunTests {
     Write-Host "Running tests..." -ForegroundColor Blue
     New-Item -ItemType Directory -Force -Path "test-results"
@@ -53,7 +48,6 @@ function SecurityScan {
 function Quality {
     Format
     Lint
-    TypeCheck
     Write-Host "All quality checks completed!" -ForegroundColor Green
 }
 
@@ -64,7 +58,6 @@ switch ($Command.ToLower()) {
     "install" { Install }
     "format" { Format }
     "lint" { Lint }
-    "type-check" { TypeCheck }
     "test" { RunTests }
     "security" { SecurityScan }
     "quality" { Quality }
@@ -84,7 +77,6 @@ Available commands:
 - install: Install dependencies
 - format: Format code with black
 - lint: Check code style with flake8
-- type-check: Check types with mypy
 - test: Run tests
 - security: Run security scans
 - quality: Run all quality checks

@@ -145,7 +145,7 @@ class TelegramBot:
             Utils.log_error(f"Erreur lors de la récupération des statistiques: {str(e)}")
             await self.application.bot.send_message(
                 chat_id=update.message.chat.id,
-                text="Désolé, une erreur s'est produite lors de la récupération de vos statistiques.",
+                text="Désolé, une erreur s'est produite lors de la récupération des statistiques.",
             )
 
     async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

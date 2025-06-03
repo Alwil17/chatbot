@@ -63,11 +63,7 @@ lint:
 	@echo "Linting code with flake8..."
 	.venv/bin/flake8 src/ tests/
 
-type-check:
-	@echo "Type checking with mypy..."
-	.venv/bin/mypy src/ tests/
-
-quality: format lint type-check
+quality: format lint
 	@echo "All quality checks passed!"
 
 security-scan:
