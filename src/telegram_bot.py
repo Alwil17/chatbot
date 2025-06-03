@@ -14,7 +14,9 @@ from datetime import datetime
 
 class TelegramBot:
     def __init__(self) -> None:
-        self.application = Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).build()
+        self.application = (
+            Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).updater(None).build()
+        )
         self.application.add_error_handler(self._error_handler)
         self._setup_handlers()
 
