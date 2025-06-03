@@ -107,10 +107,10 @@ Resources:
 Outputs:
   ApiUrl:
     Description: "API Gateway endpoint URL"
-    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/"
   WebhookUrl:
     Description: "Telegram Webhook URL"
-    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentName}/telegram/webhook"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com/telegram/webhook"
   DynamoDBTableName:
     Description: "DynamoDB Table Name"
     Value: !Ref DynamoDBTable
