@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Any, AsyncGenerator, Union, Awaitable, 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-import asyncio
 
 from .config import env_vars
 from .utils import Utils
@@ -72,7 +71,7 @@ async def telegram_webhook(request: Request) -> Dict[str, str]:
             raise ValueError("Empty update data received")
 
         # Process the update and get the response
-        asyncio.create_task(telegram_bot.handle_update(update_data))
+        await telegram_bot.handle_update(update_data)
         return {"status": "ok"}
 
     except Exception as e:
