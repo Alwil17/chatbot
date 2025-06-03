@@ -38,11 +38,11 @@ pipeline {
                         sh "make format"
                     }
                 }
-                stage('Linting') {
+                /* stage('Linting') {
                     steps {
                         sh "make lint"
                     }
-                }
+                } */
                 /* stage('Type Checking') {
                     steps {
                         sh "make type-check"
@@ -98,7 +98,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'alwil17'
-                    branch 'dev'
                     branch 'preprod'
                 }
             }
@@ -124,7 +123,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'alwil17'
-                    branch 'dev'
                     branch 'preprod'
                 }
             }
@@ -159,7 +157,6 @@ pipeline {
             when {
                 anyOf {
                     branch 'alwil17'
-                    branch 'dev'
                     branch 'preprod'
                 }
             }
