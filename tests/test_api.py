@@ -1,7 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 from src.main import app
+from src.telegram_bot import TelegramBot
 from mistralai import Chat
 from mypy_boto3_dynamodb.service_resource import Table
 
@@ -84,11 +85,9 @@ async def test_telegram_webhook(client: TestClient, mock_dynamo: Table) -> None:
         },
     }
 
-    with patch("aiohttp.ClientSession.post") as mock_post:
-        # Mock the response from Telegram API
-        mock_response = AsyncMock()
-        mock_response.json.return_value = {"ok": True, "result": {"message_id": 1}}
-        mock_post.return_value.__aenter__.return_value = mock_response
+    # Mock the bot's send_message method
+    with patch.object(TelegramBot, "handle_update") as mock_handle_update:
+        mock_handle_update.return_value = {"statusCode": 200, "body": "Update processed"}
 
         response = client.post(
             "/telegram/webhook",
@@ -98,4 +97,5 @@ async def test_telegram_webhook(client: TestClient, mock_dynamo: Table) -> None:
 
         assert response.status_code == 200
         assert response.json() == {"status": "ok"}
-        mock_post.assert_called_once()  # Verify we tried to send a message
+        # Verify handle_update was called with the update data
+        mock_handle_update.assert_called_once_with(update_data)
