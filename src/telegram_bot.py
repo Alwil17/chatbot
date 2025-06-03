@@ -14,9 +14,7 @@ from datetime import datetime
 
 class TelegramBot:
     def __init__(self) -> None:
-        self.application = (
-            Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).build()
-        )
+        self.application = Application.builder().token(env_vars.TELEGRAM_BOT_TOKEN).build()
         self.application.add_error_handler(self._error_handler)
         self._setup_handlers()
 
@@ -53,7 +51,9 @@ class TelegramBot:
         )
         Utils.log_error("Reached here")
         Utils.log_error(update)
-        await self.application.bot.send_message(chat_id=update.message.chat.id, text=welcome_message)
+        await self.application.bot.send_message(
+            chat_id=update.message.chat.id, text=welcome_message
+        )
 
     async def _help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /help"""
@@ -95,7 +95,11 @@ class TelegramBot:
             ],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await self.application.bot.send_message(chat_id=update.message.chat.id, text="⚙️ Paramètres\n\n Choisissez un paramètre à configurer:", reply_markup=reply_markup)
+        await self.application.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="⚙️ Paramètres\n\n Choisissez un paramètre à configurer:",
+            reply_markup=reply_markup,
+        )
 
     async def _stats_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """Gère la commande /stats"""
@@ -133,12 +137,15 @@ class TelegramBot:
                     "Commencez à discuter pour voir vos statistiques!"
                 )
 
-            await self.application.bot.send_message(chat_id=update.message.chat.id, text=stats_message)
+            await self.application.bot.send_message(
+                chat_id=update.message.chat.id, text=stats_message
+            )
 
         except Exception as e:
             Utils.log_error(f"Erreur lors de la récupération des statistiques: {str(e)}")
-            await self.application.bot.send_message(chat_id=update.message.chat.id, text=
-                "Désolé, une erreur s'est produite lors de la récupération de vos statistiques."
+            await self.application.bot.send_message(
+                chat_id=update.message.chat.id,
+                text="Désolé, une erreur s'est produite lors de la récupération de vos statistiques.",
             )
 
     async def _clear_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -153,8 +160,9 @@ class TelegramBot:
             ]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await self.application.bot.send_message(chat_id=update.message.chat.id, text=
-            "🗑️ Êtes-vous sûr de vouloir effacer l'historique de conversation?\n"
+        await self.application.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="🗑️ Êtes-vous sûr de vouloir effacer l'historique de conversation?\n"
             "Cette action est irréversible.",
             reply_markup=reply_markup,
         )
@@ -250,12 +258,15 @@ class TelegramBot:
             Utils.insert_data(response)
 
             # Envoyer la réponse à l'utilisateur
-            await self.application.bot.send_message(chat_id=update.message.chat.id, text=chat_response.choices[0].message.content)
+            await self.application.bot.send_message(
+                chat_id=update.message.chat.id, text=chat_response.choices[0].message.content
+            )
 
         except Exception as e:
             Utils.log_error(f"Erreur lors du traitement du message Telegram: {str(e)}")
-            await self.application.bot.send_message(chat_id=update.message.chat.id, text=
-                "Désolé, une erreur s'est produite lors du traitement de votre message."
+            await self.application.bot.send_message(
+                chat_id=update.message.chat.id,
+                text="Désolé, une erreur s'est produite lors du traitement de votre message.",
             )
 
     async def setup_webhook(self) -> None:
@@ -269,7 +280,9 @@ class TelegramBot:
         async with self.application:
             update = Update.de_json(update_data, self.application.bot)
             if update:
-                await self.application.bot.send_message(chat_id=update.message.chat.id, text="Bonjour !!!")
+                await self.application.bot.send_message(
+                    chat_id=update.message.chat.id, text="Bonjour !!!"
+                )
                 Utils.log_error(f"Received update: {update}")
                 await self.application.process_update(update)
 
