@@ -49,8 +49,6 @@ class TelegramBot:
             "🔹 /clear - Effacer l'historique\n\n"
             "Pour commencer, envoyez-moi simplement un message!"
         )
-        Utils.log_error("Reached here")
-        Utils.log_error(update)
         await self.application.bot.send_message(
             chat_id=update.message.chat.id, text=welcome_message
         )
@@ -280,10 +278,6 @@ class TelegramBot:
         async with self.application:
             update = Update.de_json(update_data, self.application.bot)
             if update:
-                await self.application.bot.send_message(
-                    chat_id=update.message.chat.id, text="Bonjour !!!"
-                )
-                Utils.log_error(f"Received update: {update}")
                 await self.application.process_update(update)
 
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, WebSocket
+from fastapi import FastAPI, Request, Response, WebSocket, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from mangum import Mangum
@@ -63,7 +63,7 @@ async def root(request: Request) -> Dict[str, str]:
 
 @app.post(env_vars.TELEGRAM_WEBHOOK_PATH)
 @limiter.limit("60/minute")
-async def telegram_webhook(request: Request) -> Dict[str, str]:
+async def telegram_webhook(request: Request, background_tasks: BackgroundTasks) -> Dict[str, str]:
     """Endpoint pour recevoir les mises à jour de Telegram"""
     try:
         update_data = await request.json()
@@ -71,7 +71,7 @@ async def telegram_webhook(request: Request) -> Dict[str, str]:
             raise ValueError("Empty update data received")
 
         # Process the update and get the response
-        await telegram_bot.handle_update(update_data)
+        background_tasks.add_task(telegram_bot.handle_update, update_data)
         return {"status": "ok"}
 
     except Exception as e:
